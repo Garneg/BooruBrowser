@@ -64,7 +64,8 @@
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:paddingBottom="16dp">
                 <LinearLayout
                     android:orientation="vertical"
                     android:minWidth="25px"
@@ -72,7 +73,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/container"
-                    android:padding="8dp">
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingTop="8dp">
                 </LinearLayout>
                 <LinearLayout
                     android:orientation="horizontal"
