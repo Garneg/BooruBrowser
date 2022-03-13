@@ -12,6 +12,7 @@ using Android.Graphics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
+using System.Xml;
 
 
 namespace Rule34
@@ -53,7 +54,6 @@ namespace Rule34
             searchBtn.Click += Search;
             text.AfterTextChanged += Text_AfterTextChanged;
             FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
-            //ArrayAdapter adapter = new ArrayAdapter<String>(this, Resource.Id.contentList, mobileArray);
             relativeLayout = FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
             //var list = FindViewById<ListView>(Resource.Id.contentList);
             Container = FindViewById<LinearLayout>(Resource.Id.container);
@@ -66,7 +66,7 @@ namespace Rule34
             NextPageButton.Click += NextPageButton_Click;
             PreviousPageButton.Click += PreviousPageButton_Click;
             PageNumberIndicator.SetMinimumWidth(PreviousPageButton.MinimumWidth);
-            
+
 
             relativeLayout.AddView(AutocompleteList);
             Paginator.Visibility = ViewStates.Gone;
@@ -74,10 +74,14 @@ namespace Rule34
 
         private void PreviousPageButton_Click(object sender, EventArgs e)
         {
+            ///Probably needs to be redone, but it seems to be very safe, if we will forgot to disable it
             if (pageNumber > 1)
             {
                 pageNumber--;
+                if (pageNumber == 1)
+                    PreviousPageButton.Enabled = false;
                 Search(sender, e);
+
             }
         }
 
@@ -85,6 +89,7 @@ namespace Rule34
         {
             pageNumber++;
             Search(sender, e);
+            PreviousPageButton.Enabled = true;
         }
 
         private void AutocompleteList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -205,6 +210,7 @@ namespace Rule34
                 for (int i = 0; i < picturesUrls.Length; i++)
                 {
                     WebClient client = new WebClient();
+                    string pictureUrl = picturesUrls[i];
                     byte[] bytesForImage = client.DownloadData(picturesUrls[i]);
 
                     Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
@@ -230,6 +236,23 @@ namespace Rule34
                                 $"Container width: {Container.Width}\n" +
                                 $"Height: {Picture.Height} / {Picture.Width} * {Container.Width} = {height}", ToastLength.Short).Show();
                         };
+                        image.LongClick += (object sender, View.LongClickEventArgs e) =>
+                        {
+                            Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
+                            builder.SetTitle("Do you want to download this?");
+                            builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
+                            {
+                                DownloadManager manager = DownloadManager.FromContext(this);
+                                DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(pictureUrl));
+
+                                downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
+                                downloadRequest.SetTitle("Dat shit");
+                                downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, "dat shit.jpg");
+                                long id = manager.Enqueue(downloadRequest);
+                            });
+                            Android.App.AlertDialog dialog = builder.Create();
+                            dialog.Show();
+                        };
                     }
                     else
                     {
@@ -251,7 +274,6 @@ namespace Rule34
                     {
                         Thread.Sleep(50);
                     }
-                    //Toast.MakeText(this, $"Setting {imageViews[i].Height.ToString()}", ToastLength.Short).Show();
 
                     Container.AddView(imageViews[i]);
                 }
@@ -267,9 +289,68 @@ namespace Rule34
                 builder.SetTitle("Oops");
                 builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
                 builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync(ex.Message + " | " + ex.StackTrace); });
+                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
                 builder.Create().Show();
             }
         }
+
+        public async Task<Post[]> GetPostsURLs(string RequestURL)
+        {
+
+            HttpWebRequest request = WebRequest.CreateHttp(RequestURL);
+
+            HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
+
+            return new Post[10];
+
+        }
+    }
+
+    public class Post
+    {
+        string fileUrl;
+        int width;
+        int height;
+
+        string sampleUrl;
+        int sampleWidth;
+        int sampleHeight;
+
+        string previewUrl;
+        int previewWidth;
+        int previewHeight;
+
+        int score;
+
+        int? parentId;
+        bool hasChildren;
+
+        string source;
+
+        bool hasComments;
+        bool hasNotes;
+        string status;
+
+        long creatorId;
+
+        string rating;
+
+        string[] tags;
+
+        long postId;
+
+        string createdAt;
+
+        long change;
+
+
+    }
+
+    public static class ExtensionClass
+    {
+        //public static char firstchar(this post post)
+        //{
+        //    return ;
+        //}
     }
 }
