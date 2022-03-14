@@ -7,6 +7,7 @@ Mobile application based on Xamarin.Android for browsing rule34 imageboard.
 - High quality images(loading samples, instead of preview)
 
 #### TODO:
+- Architecture refactoring
 - Settings
 - Dark Theme
 - Download Content
