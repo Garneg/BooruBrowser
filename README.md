@@ -12,6 +12,6 @@ Mobile application based on Xamarin.Android for browsing rule34 imageboard.
 - Download Content
 - History
 - Collection
-- Video Streaming
+- Video Support
 - UI and UX Improvements
 - Search Improvments
