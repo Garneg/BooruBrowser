@@ -4,7 +4,6 @@ using Android.Runtime;
 using AndroidX.AppCompat.App;
 using Android.Widget;
 using Android.Views;
-//using AndroidX.AppCompat.Widget;
 using System;
 using System.Net;
 using System.IO;
@@ -148,6 +147,7 @@ namespace Rule34
 
         }
 
+        
         public async void Search(object sender, EventArgs e)
         {
             try
@@ -246,8 +246,8 @@ namespace Rule34
                                 DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(pictureUrl));
 
                                 downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
-                                downloadRequest.SetTitle("Dat shit");
-                                downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, "dat shit.jpg");
+                                downloadRequest.SetTitle(text.Text);
+                                downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{text.Text}.jpg");
                                 long id = manager.Enqueue(downloadRequest);
                             });
                             Android.App.AlertDialog dialog = builder.Create();
@@ -302,7 +302,7 @@ namespace Rule34
             HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
 
             return new Post[10];
-
+            
         }
     }
 

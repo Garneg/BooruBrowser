@@ -49,6 +49,7 @@
                 android:layout_toRightOf="@id/linearLayout1"
                 android:id="@+id/button1" />
         </LinearLayout>
+       
         <TextView
             android:layout_width="278.0dp"
             android:layout_marginTop="30px"
@@ -104,6 +105,13 @@
                         android:text="&gt;&gt;"
                         android:id="@+id/nextPageButton"/>
                 </LinearLayout>
+                 <androidx.appcompat.view.menu.ExpandedMenuView
+            android:minWidth="25px"
+            android:minHeight="25dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#feeeff"
+            android:id="@+id/expandedMenuView1"/>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
