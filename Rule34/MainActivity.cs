@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using System.Xml;
+using System.Xml.Serialization;
 
 
 namespace Rule34
@@ -80,7 +81,6 @@ namespace Rule34
                 if (pageNumber == 1)
                     PreviousPageButton.Enabled = false;
                 Search(sender, e);
-
             }
         }
 
@@ -306,51 +306,77 @@ namespace Rule34
         }
     }
 
+    [Serializable, XmlRoot(ElementName = "post")]
     public class Post
     {
-        string fileUrl;
+        [XmlAttribute(AttributeName = "file_url")]
+        public string fileUrl;
+
+        [XmlAttribute(AttributeName = "width")]
         int width;
+
+        [XmlAttribute(AttributeName = "height")]
         int height;
 
-        string sampleUrl;
-        int sampleWidth;
-        int sampleHeight;
+        [XmlAttribute(AttributeName = "sample_url")]
+        string sample_url;
 
-        string previewUrl;
-        int previewWidth;
-        int previewHeight;
+        [XmlAttribute(AttributeName = "sample_width")]
+        int sample_width;
 
+        [XmlAttribute(AttributeName = "sample_height")]
+        int sample_height;
+
+        [XmlAttribute(AttributeName = "preview_url")]
+        string preview_url;
+
+        [XmlAttribute(AttributeName = "preview_width")]
+        int preview_width;
+
+        [XmlAttribute(AttributeName = "preview_height")]
+        int preview_height;
+
+        [XmlAttribute(AttributeName = "score")]
         int score;
 
-        int? parentId;
-        bool hasChildren;
+        [XmlAttribute(AttributeName = "parent_id")]
+        public string parent_id;
 
+        [XmlAttribute(AttributeName = "has_children")]
+        bool has_children;
+
+        [XmlAttribute(AttributeName = "source")]
         string source;
 
-        bool hasComments;
-        bool hasNotes;
+        [XmlAttribute(AttributeName = "has_comments")]
+        bool has_comments;
+
+        [XmlAttribute(AttributeName = "has_notes")]
+        bool has_notes;
+
+        [XmlAttribute(AttributeName = "status")]
         string status;
 
-        long creatorId;
+        [XmlAttribute(AttributeName = "creator_id")]
+        long creator_id;
 
+        [XmlAttribute(AttributeName = "rating")]
         string rating;
 
-        string[] tags;
+        [XmlAttribute(AttributeName = "tags")]
+        public string[] tags;
 
-        long postId;
+        [XmlAttribute(AttributeName = "post_id")]
+        long post_id;
 
-        string createdAt;
+        [XmlAttribute(AttributeName = "created_at")]
+        string created_at;
 
+        [XmlAttribute(AttributeName = "change")]
         long change;
 
 
     }
 
-    public static class ExtensionClass
-    {
-        //public static char firstchar(this post post)
-        //{
-        //    return ;
-        //}
-    }
+    
 }
