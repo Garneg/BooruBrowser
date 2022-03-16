@@ -42,6 +42,9 @@ namespace Rule34
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
+            Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
+            
+            
             Button searchBtn = FindViewById<Button>(Resource.Id.button1);
             Output = FindViewById<TextView>(Resource.Id.textView1);
             Output.Visibility = ViewStates.Gone;
@@ -55,7 +58,6 @@ namespace Rule34
             text.AfterTextChanged += Text_AfterTextChanged;
             FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
             relativeLayout = FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
-            //var list = FindViewById<ListView>(Resource.Id.contentList);
             Container = FindViewById<LinearLayout>(Resource.Id.container);
             AutocompleteList = new ListView(this);
             AutocompleteList.SetBackgroundColor(Color.White);
@@ -109,27 +111,32 @@ namespace Rule34
         {
             try
             {
-
-                string query = text.Text.Split(' ')[text.Text.Split(' ').Length - 1];
-
-                HttpWebRequest request = WebRequest.CreateHttp($"https://rule34.xxx/autocomplete.php?q={query}");
-
-                HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-
-                StreamReader reader = new StreamReader(response.GetResponseStream());
-                string responseText = reader.ReadToEnd();
-                if (AutocompleteList.Visibility == ViewStates.Invisible)
-                    AutocompleteList.Visibility = ViewStates.Visible;
-                AutocompleteList.SetY(text.TranslationY + text.Height + FindViewById<LinearLayout>(Resource.Id.linearLayout2).GetY());
-                AutocompleteList.SetPadding(15, 0, 15, 0);
-                string[] prompts = new string[responseText.Split("value\":\"").Length];
-                for (int i = 0; i < prompts.Length; i++)
+                await Task.Run(() =>
                 {
-                    responseText = responseText.Substring(responseText.IndexOf("value\":\"") + "value\":\"".Length);
-                    prompts[i] = responseText.Substring(0, responseText.IndexOf('\"'));
-                }
-                AutocompleteList.Adapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
-                ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
+                    string query = text.Text.Split(' ')[text.Text.Split(' ').Length - 1];
+
+                    HttpWebRequest request = WebRequest.CreateHttp($"https://rule34.xxx/autocomplete.php?q={query}");
+
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                    StreamReader reader = new StreamReader(response.GetResponseStream());
+                    string responseText = reader.ReadToEnd();
+                    
+                    string[] prompts = new string[responseText.Split("value\":\"").Length];
+                    for (int i = 0; i < prompts.Length; i++)
+                    {
+                        responseText = responseText.Substring(responseText.IndexOf("value\":\"") + "value\":\"".Length);
+                        prompts[i] = responseText.Substring(0, responseText.IndexOf('\"'));
+                    }
+                    new Handler(MainLooper).Post(() =>
+                    {
+                        AutocompleteList.Adapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
+                        AutocompleteList.SetY(text.TranslationY + text.Height + FindViewById<LinearLayout>(Resource.Id.linearLayout2).GetY());
+                        if (AutocompleteList.Visibility == ViewStates.Invisible)
+                            AutocompleteList.Visibility = ViewStates.Visible;
+                    });
+                });
+                //ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
 
             }
             catch (Exception ex)
@@ -144,7 +151,7 @@ namespace Rule34
 
             if (AutocompleteList.Visibility == ViewStates.Visible)
                 AutocompleteList.Visibility = ViewStates.Invisible;
-
+            
         }
 
         
@@ -186,13 +193,6 @@ namespace Rule34
                         if (responseString.IndexOf("sample_url=\"") > 0)
                             responseString = responseString.Substring(responseString.IndexOf("sample_url=\"") + "sample_url =\"".Length);
 
-                        //string url = responseString.Substring(responseString.IndexOf("preview_url=\"") + "preview_url=\"".Length);
-                        //url = url.Substring(0, url.IndexOf("\""));
-
-                        //if (responseString.IndexOf("preview_url=\"") > 0)
-                        //    responseString = responseString.Substring(responseString.IndexOf("preview_url=\"") + "preview_url=\"".Length);
-
-
                         if (url.IndexOf(".mp4") > 0)
                         {
                             url = responseString.Substring(responseString.IndexOf("preview_url=\"") + "preview_url=\"".Length);
@@ -209,73 +209,65 @@ namespace Rule34
                 ImageView[] imageViews = new ImageView[picturesUrls.Length];
                 for (int i = 0; i < picturesUrls.Length; i++)
                 {
-                    WebClient client = new WebClient();
-                    string pictureUrl = picturesUrls[i];
-                    byte[] bytesForImage = client.DownloadData(picturesUrls[i]);
-
-                    Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
-                    ImageView image = new ImageView(this);
-
-                    if (Picture != null)
+                    await Task.Run(() =>
                     {
+                        WebClient client = new WebClient();
+                        string pictureUrl = picturesUrls[i];
+                        byte[] bytesForImage = client.DownloadData(picturesUrls[i]);
 
-                        image.SetPadding(0, 10, 0, 10);
-
-                        image.SetImageBitmap(Picture);
-
-                        int height = (int)((float)Picture.Height / (float)Picture.Width * (float)Container.Width);
-
-                        image.LayoutParameters = new ViewGroup.LayoutParams(Container.Width, height);
-
-                        image.SetScaleType(ImageView.ScaleType.FitXy);
-
-                        image.Click += (object sender, EventArgs e) =>
+                        Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
+                        ImageView image = new ImageView(this);
+                        
+                        if (Picture != null)
                         {
-                            Toast.MakeText(this, $"Picture: {Picture.Width}x{Picture.Height}\n" +
-                                $"ImageView: {image.Width}x{image.Height}\n" +
-                                $"Container width: {Container.Width}\n" +
-                                $"Height: {Picture.Height} / {Picture.Width} * {Container.Width} = {height}", ToastLength.Short).Show();
-                        };
-                        image.LongClick += (object sender, View.LongClickEventArgs e) =>
-                        {
-                            Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
-                            builder.SetTitle("Do you want to download this?");
-                            builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
+
+                            image.SetPadding(0, 10, 0, 10);
+
+                            image.SetImageBitmap(Picture);
+
+                            int height = (int)((float)Picture.Height / (float)Picture.Width * (float)Container.Width);
+
+                            image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
+
+                            image.SetScaleType(ImageView.ScaleType.FitXy);
+
+                            image.Click += (object sender, EventArgs e) =>
                             {
-                                DownloadManager manager = DownloadManager.FromContext(this);
-                                DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(pictureUrl));
+                                Toast.MakeText(this, $"Well it is a picture and you are definitely not allowed to download it by long click!", ToastLength.Short).Show();
+                            };
+                            image.LongClick += (object sender, View.LongClickEventArgs e) =>
+                            {
+                                Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
+                                builder.SetTitle("Download");
+                                builder.SetMessage("Do you really want to download this piece of image?");
+                                builder.SetPositiveButton("Yep", (object sender, Android.Content.DialogClickEventArgs e) =>
+                                {
+                                    DownloadManager manager = DownloadManager.FromContext(this);
+                                    DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(pictureUrl));
 
-                                downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
-                                downloadRequest.SetTitle(text.Text);
-                                downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{text.Text}.jpg");
-                                long id = manager.Enqueue(downloadRequest);
-                            });
-                            Android.App.AlertDialog dialog = builder.Create();
-                            dialog.Show();
-                        };
-                    }
-                    else
-                    {
-                        image.SetMinimumWidth(500);
-                        image.SetMinimumHeight(500);
-                        image.SetBackgroundColor(TitleColor);
-                    }
+                                    downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
+                                    downloadRequest.SetTitle(text.Text);
+                                    downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{text.Text}.jpg");
+                                    long id = manager.Enqueue(downloadRequest);
+                                });
+                                builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
+                                Android.App.AlertDialog dialog = builder.Create();
+                                dialog.Show();
+                            };
+                        }
+                        else
+                        {
+                            image.SetMinimumWidth(500);
+                            image.SetMinimumHeight(500);
+                            image.SetBackgroundColor(TitleColor);
+                        }
 
-                    imageViews[i] = image;
+                        new Handler(MainLooper).Post(() =>
+                        {
+                            Container.AddView(image);
+                        });
 
-                    LoadedImagesNumber++;
-
-
-                }
-
-                for (int i = 0; i < picturesUrls.Length; i++)
-                {
-                    while (LoadedImagesNumber < picturesUrls.Length)
-                    {
-                        Thread.Sleep(50);
-                    }
-
-                    Container.AddView(imageViews[i]);
+                    });
                 }
 
                 PageNumberIndicator.Text = pageNumber.ToString();
@@ -294,89 +286,19 @@ namespace Rule34
             }
         }
 
-        public async Task<Post[]> GetPostsURLs(string RequestURL)
+        public async Task<PostsCollection> GetPosts(string RequestURL)
         {
-
             HttpWebRequest request = WebRequest.CreateHttp(RequestURL);
 
             HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
 
-            return new Post[10];
-            
+            StreamReader responseReader = new StreamReader(response.GetResponseStream());
+
+            return PostsCollection.FromXml(responseReader.ReadToEnd());
         }
     }
 
-    [Serializable, XmlRoot(ElementName = "post")]
-    public class Post
-    {
-        [XmlAttribute(AttributeName = "file_url")]
-        public string fileUrl;
-
-        [XmlAttribute(AttributeName = "width")]
-        int width;
-
-        [XmlAttribute(AttributeName = "height")]
-        int height;
-
-        [XmlAttribute(AttributeName = "sample_url")]
-        string sample_url;
-
-        [XmlAttribute(AttributeName = "sample_width")]
-        int sample_width;
-
-        [XmlAttribute(AttributeName = "sample_height")]
-        int sample_height;
-
-        [XmlAttribute(AttributeName = "preview_url")]
-        string preview_url;
-
-        [XmlAttribute(AttributeName = "preview_width")]
-        int preview_width;
-
-        [XmlAttribute(AttributeName = "preview_height")]
-        int preview_height;
-
-        [XmlAttribute(AttributeName = "score")]
-        int score;
-
-        [XmlAttribute(AttributeName = "parent_id")]
-        public string parent_id;
-
-        [XmlAttribute(AttributeName = "has_children")]
-        bool has_children;
-
-        [XmlAttribute(AttributeName = "source")]
-        string source;
-
-        [XmlAttribute(AttributeName = "has_comments")]
-        bool has_comments;
-
-        [XmlAttribute(AttributeName = "has_notes")]
-        bool has_notes;
-
-        [XmlAttribute(AttributeName = "status")]
-        string status;
-
-        [XmlAttribute(AttributeName = "creator_id")]
-        long creator_id;
-
-        [XmlAttribute(AttributeName = "rating")]
-        string rating;
-
-        [XmlAttribute(AttributeName = "tags")]
-        public string[] tags;
-
-        [XmlAttribute(AttributeName = "post_id")]
-        long post_id;
-
-        [XmlAttribute(AttributeName = "created_at")]
-        string created_at;
-
-        [XmlAttribute(AttributeName = "change")]
-        long change;
-
-
-    }
+    
 
     
 }
