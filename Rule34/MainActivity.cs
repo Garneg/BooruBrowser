@@ -78,8 +78,7 @@ namespace Rule34
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
-            Thread thread = new Thread(new ThreadStart(() => { }));
-            
+            Search();
         }
 
         private void PreviousPageButton_Click(object sender, EventArgs e)
@@ -164,8 +163,8 @@ namespace Rule34
 
         public async void Search()
         {
-            try
-            {
+            //try
+            //{
                 Paginator.Visibility = ViewStates.Gone;
                 AutocompleteList.Visibility = ViewStates.Invisible;
                 Output.Text = "";
@@ -188,9 +187,15 @@ namespace Rule34
                     await Task.Run(() =>
                     {
                         WebClient client = new WebClient();
-                        string pictureUrl = Collection[i].SampleUrl;
-                        byte[] bytesForImage = client.DownloadData(pictureUrl);
+                        string pictureUrl;
 
+                        if (!Collection[i].Sample.Url.Contains(".mp4"))
+                            pictureUrl = Collection[i].Sample.Url;
+                        else
+                            pictureUrl = Collection[i].Preview.Url;
+
+                        byte[] bytesForImage = client.DownloadData(pictureUrl);
+                        
                         Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
                         PostThumbnail image = new PostThumbnail(this);
                         
@@ -200,6 +205,7 @@ namespace Rule34
                             image.SetPadding(0, 10, 0, 10);
 
                             image.SetImageBitmap(Picture);
+                            image.SetPost(Collection[i]);
                             
                             int height = (int)((float)Picture.Height / (float)Picture.Width * (float)Container.Width);
 
@@ -209,7 +215,7 @@ namespace Rule34
 
                             image.Click += (object sender, EventArgs e) =>
                             {
-                                Toast.MakeText(this, $"Well it is a picture and you are definitely not allowed to download it by long click!", ToastLength.Short).Show();
+                                Toast.MakeText(this, $"Tags of post: {string.Join(' ', image.GetPost().Tags)}", ToastLength.Short).Show();
                             };
                             image.LongClick += (object sender, View.LongClickEventArgs e) =>
                             {
@@ -219,11 +225,12 @@ namespace Rule34
                                 builder.SetPositiveButton("Yep", (object sender, Android.Content.DialogClickEventArgs e) =>
                                 {
                                     DownloadManager manager = DownloadManager.FromContext(this);
-                                    DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(pictureUrl));
+                                    DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
 
                                     downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
-                                    downloadRequest.SetTitle(text.Text);
-                                    downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{text.Text}.jpg");
+                                    downloadRequest.SetTitle(image.GetPost().Tags[0]);
+                                    downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
+                                        $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.Length-4)}");
                                     long id = manager.Enqueue(downloadRequest);
                                 });
                                 builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
@@ -243,16 +250,16 @@ namespace Rule34
                 PageNumberIndicator.Text = pageNumber.ToString();
 
                 Paginator.Visibility = ViewStates.Visible;
-            }
-            catch (Exception ex)
-            {
-                Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
-                builder.SetTitle("Oops");
-                builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
-                builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
-                builder.Create().Show();
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
+            //    builder.SetTitle("Oops");
+            //    builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
+            //    builder.SetPositiveButton("Ok", (sender, eventargs) => { });
+            //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
+            //    builder.Create().Show();
+            //}
         }
 
         public async Task<XmlDocument> RequestXml(string RequestUrl)
@@ -260,12 +267,12 @@ namespace Rule34
             HttpWebRequest request = WebRequest.CreateHttp(RequestUrl);
 
             HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-
+            
             StreamReader responseReader = new StreamReader(response.GetResponseStream());
-
+            
             XmlDocument doc = new XmlDocument();
 
-            doc.LoadXml(responseReader.ReadToEnd());
+            doc.LoadXml(await responseReader.ReadToEndAsync());
 
             return doc;
         }

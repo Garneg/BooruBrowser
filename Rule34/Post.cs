@@ -36,76 +36,111 @@ namespace Rule34
         }
 
     }
-
+    ///Remeber to encapsulate file sample and preview fields!!
     [Serializable, XmlRoot(ElementName = "post")]
     public class Post
     {
         [XmlAttribute(AttributeName = "file_url")]
-        public string FileUrl { get; }
+        public string fileUrl { get; private set; }
 
         [XmlAttribute(AttributeName = "width")]
-        public int Width { get; }
+        public int width { get; private set; }
 
         [XmlAttribute(AttributeName = "height")]
-        public int Height { get; }
+        public int height { get; private set; }
 
         [XmlAttribute(AttributeName = "sample_url")]
-        public string SampleUrl { get; }
+        public string sampleUrl { get; private set; }
 
         [XmlAttribute(AttributeName = "sample_width")]
-        public int SampleWidth { get; }
+        public int sampleWidth { get; private set; }
 
         [XmlAttribute(AttributeName = "sample_height")]
-        public int SampleHeight { get; }
+        public int sampleHeight { get; private set; }
 
         [XmlAttribute(AttributeName = "preview_url")]
-        public string PreviewUrl { get; }
+        public string previewUrl { get; private set; }
 
         [XmlAttribute(AttributeName = "preview_width")]
-        public int PreviewWidth { get; }
+        public int previewWidth { get; private set; }
 
         [XmlAttribute(AttributeName = "preview_height")]
-        public int PreviewHeight { get; }
+        public int previewHeight { get; private set; }
+
+
 
         [XmlAttribute(AttributeName = "score")]
-        public int Score { get; }
+        public int score { get; private set; }
 
         [XmlAttribute(AttributeName = "parent_id")]
-        public string ParentId { get; }
+        public string parentId { get; private set; }
 
         [XmlAttribute(AttributeName = "has_children")]
-        public bool HasChildren { get; }
+        public bool hasChildren { get; private set; }
 
         [XmlAttribute(AttributeName = "source")]
-        public string Source { get; }
+        public string source { get; private set; }
 
         [XmlAttribute(AttributeName = "has_comments")]
-        public bool HasComments { get; }
+        public bool hasComments { get; private set; }
 
         [XmlAttribute(AttributeName = "has_notes")]
-        public bool HasNotes { get; }
+        public bool hasNotes { get; private set; }
 
         [XmlAttribute(AttributeName = "status")]
-        string status;
+        public string status { get; private set; }
 
         [XmlAttribute(AttributeName = "creator_id")]
-        public long CreatorId { get; }
+        public long creatorId { get; private set; }
 
         [XmlAttribute(AttributeName = "rating")]
-        public string Rating { get; }
+        public string Rating { get; private set; }
 
         [XmlAttribute(AttributeName = "tags")]
-        public string[] Tags { get; }
+        public string[] Tags { get; private set; }
 
         [XmlAttribute(AttributeName = "post_id")]
-        public long PostId { get; }
+        public long postId { get; private set; }
 
         [XmlAttribute(AttributeName = "created_at")]
-        public string CreatedAt { get; }
+        public string createdAt { get; private set; }
 
         [XmlAttribute(AttributeName = "change")]
-        public long Change { get; }
+        public long change { get; private set; }
+
+        public ContentUnit Sample
+        {
+            get => new ContentUnit(sampleUrl, sampleWidth, sampleHeight);
+        }
+
+        public ContentUnit Preview
+        {
+            get => new ContentUnit(previewUrl, previewWidth, previewHeight);
+        }
+
+        public ContentUnit File
+        {
+            get => new ContentUnit(fileUrl, width, height);
+
+        }
 
 
+    }
+
+    /// <summary>
+    /// Represents content information structure, contains its size and url
+    /// </summary>
+    public struct ContentUnit
+    {
+        public string Url { get; }
+        public int Width { get; }
+        public int Height { get; }
+
+        public ContentUnit(string url, int width, int height)
+        {
+            Url = url;
+            Width = width;
+            Height = height;
+        }
     }
 }
