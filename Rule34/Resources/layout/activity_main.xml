@@ -49,7 +49,7 @@
                 android:layout_toRightOf="@id/linearLayout1"
                 android:id="@+id/button1" />
         </LinearLayout>
-       
+
         <TextView
             android:layout_width="278.0dp"
             android:layout_marginTop="30px"
@@ -66,7 +66,8 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingBottom="16dp">
+                android:paddingBottom="16dp"
+                android:gravity="center">
                 <LinearLayout
                     android:orientation="vertical"
                     android:minWidth="25px"
@@ -76,8 +77,16 @@
                     android:id="@+id/container"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
-                    android:paddingTop="8dp">
+                    android:paddingTop="8dp"
+                    android:gravity="center"
+                    android:foregroundGravity="center">
                 </LinearLayout>
+                <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true"
+                    android:id="@+id/progressBar1"
+                    android:visibility="gone"/>
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
@@ -105,13 +114,13 @@
                         android:text="&gt;&gt;"
                         android:id="@+id/nextPageButton"/>
                 </LinearLayout>
-                 <androidx.appcompat.view.menu.ExpandedMenuView
-            android:minWidth="25px"
-            android:minHeight="25dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#feeeff"
-            android:id="@+id/expandedMenuView1"/>
+                <androidx.appcompat.view.menu.ExpandedMenuView
+                    android:minWidth="25px"
+                    android:minHeight="25dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#feeeff"
+                    android:id="@+id/expandedMenuView1"/>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

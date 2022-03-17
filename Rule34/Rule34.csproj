@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
     <Compile Include="Post.cs" />
+    <Compile Include="PostThumbnail.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

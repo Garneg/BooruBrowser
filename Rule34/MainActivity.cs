@@ -21,7 +21,6 @@ namespace Rule34
     [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
-
         private AutoCompleteTextView text;
         private TextView Output;
         private LinearLayout Container;
@@ -34,6 +33,7 @@ namespace Rule34
         private Button PreviousPageButton;
         private LinearLayout Paginator;
         private TextView PageNumberIndicator;
+        private ProgressBar progressBar1;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -43,8 +43,7 @@ namespace Rule34
             SetContentView(Resource.Layout.activity_main);
 
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
-            
-            
+                        
             Button searchBtn = FindViewById<Button>(Resource.Id.button1);
             Output = FindViewById<TextView>(Resource.Id.textView1);
             Output.Visibility = ViewStates.Gone;
@@ -53,8 +52,9 @@ namespace Rule34
             PreviousPageButton = FindViewById<Button>(Resource.Id.previousPageButton);
             Paginator = FindViewById<LinearLayout>(Resource.Id.paginator);
             PageNumberIndicator = FindViewById<TextView>(Resource.Id.pageNumberIndicator);
+            progressBar1 = FindViewById<ProgressBar>(Resource.Id.progressBar1);
 
-            searchBtn.Click += Search;
+            searchBtn.Click += SearchButtonClicked;
             text.AfterTextChanged += Text_AfterTextChanged;
             FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
             relativeLayout = FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
@@ -69,27 +69,35 @@ namespace Rule34
             PreviousPageButton.Click += PreviousPageButton_Click;
             PageNumberIndicator.SetMinimumWidth(PreviousPageButton.MinimumWidth);
 
-
             relativeLayout.AddView(AutocompleteList);
             Paginator.Visibility = ViewStates.Gone;
         }
 
+        public void SearchButtonClicked(object sender, EventArgs e)
+        {
+            Paginator.Visibility = ViewStates.Gone;
+            PreviousPageButton.Enabled = false;
+            pageNumber = 1;
+            Thread thread = new Thread(new ThreadStart(() => { }));
+            
+        }
+
         private void PreviousPageButton_Click(object sender, EventArgs e)
         {
-            ///Probably needs to be redone, but it seems to be very safe, if we will forgot to disable it
+            ///Probably needs to be redone, but seems to be safe, if we will forgot to disable it
             if (pageNumber > 1)
             {
                 pageNumber--;
                 if (pageNumber == 1)
                     PreviousPageButton.Enabled = false;
-                Search(sender, e);
+                Search();
             }
         }
 
         private void NextPageButton_Click(object sender, EventArgs e)
         {
             pageNumber++;
-            Search(sender, e);
+            Search();
             PreviousPageButton.Enabled = true;
         }
 
@@ -154,8 +162,7 @@ namespace Rule34
             
         }
 
-        
-        public async void Search(object sender, EventArgs e)
+        public async void Search()
         {
             try
             {
@@ -165,58 +172,27 @@ namespace Rule34
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
                 string query = text.Text.Replace(" ", "+");
-                HttpWebRequest request = WebRequest.CreateHttp($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1) * pageResultLimit}");
+                
+                XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1) * pageResultLimit}");
 
-                HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-
-                StreamReader responseReader = new StreamReader(response.GetResponseStream());
-
-                string responseString = responseReader.ReadToEnd();
-
-                if (responseString.IndexOf("sample_url=\"") < 0)
+                if (response.ChildNodes[1].ChildNodes.Count < 1)
                 {
                     Toast.MakeText(this, "Not found any image🤷‍♂️", ToastLength.Short).Show();
                     return;
                 }
 
-                await Xamarin.Essentials.Clipboard.SetTextAsync(responseString);
-                string[] picturesUrls = new string[responseString.Split("sample_url=").Length - 1];
-                Toast.MakeText(this, picturesUrls.Length.ToString(), ToastLength.Short).Show();
-
-                for (int i = 0; i < picturesUrls.Length; i++)
-                {
-                    await Task.Run(() =>
-                    {
-                        string url = responseString.Substring(responseString.IndexOf("sample_url=\"") + "sample_url=\"".Length);
-                        url = url.Substring(0, url.IndexOf("\""));
-
-                        if (responseString.IndexOf("sample_url=\"") > 0)
-                            responseString = responseString.Substring(responseString.IndexOf("sample_url=\"") + "sample_url =\"".Length);
-
-                        if (url.IndexOf(".mp4") > 0)
-                        {
-                            url = responseString.Substring(responseString.IndexOf("preview_url=\"") + "preview_url=\"".Length);
-
-                            url = url.Substring(0, url.IndexOf("\""));
-
-                        }
-                        picturesUrls[i] = url;
-                    });
-
-
-                }
-                int LoadedImagesNumber = 0;
-                ImageView[] imageViews = new ImageView[picturesUrls.Length];
-                for (int i = 0; i < picturesUrls.Length; i++)
+                var Collection = PostsCollection.FromXml(response);
+                
+                for (int i = 0; i < Collection.posts.Count; i++)
                 {
                     await Task.Run(() =>
                     {
                         WebClient client = new WebClient();
-                        string pictureUrl = picturesUrls[i];
-                        byte[] bytesForImage = client.DownloadData(picturesUrls[i]);
+                        string pictureUrl = Collection[i].SampleUrl;
+                        byte[] bytesForImage = client.DownloadData(pictureUrl);
 
                         Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
-                        ImageView image = new ImageView(this);
+                        PostThumbnail image = new PostThumbnail(this);
                         
                         if (Picture != null)
                         {
@@ -224,7 +200,7 @@ namespace Rule34
                             image.SetPadding(0, 10, 0, 10);
 
                             image.SetImageBitmap(Picture);
-
+                            
                             int height = (int)((float)Picture.Height / (float)Picture.Width * (float)Container.Width);
 
                             image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
@@ -255,13 +231,7 @@ namespace Rule34
                                 dialog.Show();
                             };
                         }
-                        else
-                        {
-                            image.SetMinimumWidth(500);
-                            image.SetMinimumHeight(500);
-                            image.SetBackgroundColor(TitleColor);
-                        }
-
+                        RegisterForContextMenu(image);
                         new Handler(MainLooper).Post(() =>
                         {
                             Container.AddView(image);
@@ -271,7 +241,6 @@ namespace Rule34
                 }
 
                 PageNumberIndicator.Text = pageNumber.ToString();
-
 
                 Paginator.Visibility = ViewStates.Visible;
             }
@@ -286,19 +255,19 @@ namespace Rule34
             }
         }
 
-        public async Task<PostsCollection> GetPosts(string RequestURL)
+        public async Task<XmlDocument> RequestXml(string RequestUrl)
         {
-            HttpWebRequest request = WebRequest.CreateHttp(RequestURL);
+            HttpWebRequest request = WebRequest.CreateHttp(RequestUrl);
 
             HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
 
             StreamReader responseReader = new StreamReader(response.GetResponseStream());
 
-            return PostsCollection.FromXml(responseReader.ReadToEnd());
+            XmlDocument doc = new XmlDocument();
+
+            doc.LoadXml(responseReader.ReadToEnd());
+
+            return doc;
         }
     }
-
-    
-
-    
 }

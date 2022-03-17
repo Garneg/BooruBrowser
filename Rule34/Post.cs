@@ -20,13 +20,19 @@ namespace Rule34
         [XmlElement("post")]
         public List<Post> posts;
 
-        public static PostsCollection FromXml(string xmlDocument)
+        public static PostsCollection FromXml(XmlDocument xmlDocument)
         {
-            XmlDocument Document = new XmlDocument();
-            Document.LoadXml(xmlDocument);
             XmlSerializer serializer = new XmlSerializer(typeof(PostsCollection));
-            TextReader reader = new StringReader(Document.ChildNodes[1].OuterXml);
+            TextReader reader = new StringReader(xmlDocument.ChildNodes[1].OuterXml);
             return (PostsCollection)serializer.Deserialize(reader);
+        }
+
+        public Post this[int index]
+        {
+            get
+            {
+                return posts[index];
+            }
         }
 
     }
@@ -56,10 +62,10 @@ namespace Rule34
         public string PreviewUrl { get; }
 
         [XmlAttribute(AttributeName = "preview_width")]
-        int preview_width;
+        public int PreviewWidth { get; }
 
         [XmlAttribute(AttributeName = "preview_height")]
-        int preview_height;
+        public int PreviewHeight { get; }
 
         [XmlAttribute(AttributeName = "score")]
         public int Score { get; }
@@ -68,16 +74,16 @@ namespace Rule34
         public string ParentId { get; }
 
         [XmlAttribute(AttributeName = "has_children")]
-        bool has_children;
+        public bool HasChildren { get; }
 
         [XmlAttribute(AttributeName = "source")]
-        string source;
+        public string Source { get; }
 
         [XmlAttribute(AttributeName = "has_comments")]
-        bool has_comments;
+        public bool HasComments { get; }
 
         [XmlAttribute(AttributeName = "has_notes")]
-        bool has_notes;
+        public bool HasNotes { get; }
 
         [XmlAttribute(AttributeName = "status")]
         string status;
@@ -89,16 +95,16 @@ namespace Rule34
         public string Rating { get; }
 
         [XmlAttribute(AttributeName = "tags")]
-        public string[] tags { get; }
+        public string[] Tags { get; }
 
         [XmlAttribute(AttributeName = "post_id")]
         public long PostId { get; }
 
         [XmlAttribute(AttributeName = "created_at")]
-        string created_at;
+        public string CreatedAt { get; }
 
         [XmlAttribute(AttributeName = "change")]
-        long change;
+        public long Change { get; }
 
 
     }
