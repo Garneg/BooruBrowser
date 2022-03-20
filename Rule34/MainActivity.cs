@@ -27,6 +27,7 @@ namespace Rule34
         private RelativeLayout relativeLayout;
         private int pageResultLimit = 10;
         private int pageNumber = 1;
+        private string lastQuery;
 
         private ListView AutocompleteList;
         private Button NextPageButton;
@@ -75,6 +76,7 @@ namespace Rule34
 
         public void SearchButtonClicked(object sender, EventArgs e)
         {
+            lastQuery = text.Text;
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
@@ -170,9 +172,9 @@ namespace Rule34
                 Output.Text = "";
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
-                string query = text.Text.Replace(" ", "+");
+                string query = lastQuery.Replace(" ", "+");
                 
-                XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1) * pageResultLimit}");
+                XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
 
                 if (response.ChildNodes[1].ChildNodes.Count < 1)
                 {
@@ -230,7 +232,7 @@ namespace Rule34
                                     downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
                                     downloadRequest.SetTitle(image.GetPost().Tags[0]);
                                     downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
-                                        $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.Length-4)}");
+                                        $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.LastIndexOf('.'))}");
                                     long id = manager.Enqueue(downloadRequest);
                                 });
                                 builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
@@ -247,9 +249,14 @@ namespace Rule34
                     });
                 }
 
-                PageNumberIndicator.Text = pageNumber.ToString();
+                //PageNumberIndicator.Text = pageNumber.ToString();
+
+            UpdatePaginator();
 
                 Paginator.Visibility = ViewStates.Visible;
+
+            
+            
             //}
             //catch (Exception ex)
             //{
@@ -260,6 +267,28 @@ namespace Rule34
             //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
             //    builder.Create().Show();
             //}
+        }
+
+        public async void UpdatePaginator()
+        {
+            string query = lastQuery.Replace(" ", "+");
+            XmlDocument nextPageDocument = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber)}");
+            if (pageNumber > 2)
+                PreviousPageButton.Enabled = true;
+            else
+                PreviousPageButton.Enabled = false;
+
+            if (nextPageDocument.ChildNodes[1].ChildNodes.Count > 0)
+            {
+                NextPageButton.Enabled = true;
+            }
+            else
+            {
+                NextPageButton.Enabled = false;
+            }
+
+            PageNumberIndicator.Text = pageNumber.ToString();
+
         }
 
         public async Task<XmlDocument> RequestXml(string RequestUrl)

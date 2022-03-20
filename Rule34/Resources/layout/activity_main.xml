@@ -106,6 +106,7 @@
                         android:text="Hello world"
                         android:padding="8dp"
                         android:background="@color/colorPrimary"
+                        android:textColor="#fefefe"
                         android:id="@+id/pageNumberIndicator"/>
                     <Button
                         android:layout_width="wrap_content"
