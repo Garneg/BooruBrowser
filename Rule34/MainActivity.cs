@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 
 namespace Rule34
@@ -44,7 +46,7 @@ namespace Rule34
             SetContentView(Resource.Layout.activity_main);
 
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
-                        
+
             Button searchBtn = FindViewById<Button>(Resource.Id.button1);
             Output = FindViewById<TextView>(Resource.Id.textView1);
             Output.Visibility = ViewStates.Gone;
@@ -63,8 +65,7 @@ namespace Rule34
             AutocompleteList = new ListView(this);
             AutocompleteList.SetBackgroundColor(Color.White);
             AutocompleteList.Visibility = ViewStates.Invisible;
-            AutocompleteList.SetPadding(10, 0, 10, 0);
-            AutocompleteList.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, 450);
+            AutocompleteList.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, (int)(140 * Resources.DisplayMetrics.Density));
             AutocompleteList.ItemClick += AutocompleteList_ItemClick;
             NextPageButton.Click += NextPageButton_Click;
             PreviousPageButton.Click += PreviousPageButton_Click;
@@ -72,6 +73,20 @@ namespace Rule34
 
             relativeLayout.AddView(AutocompleteList);
             Paginator.Visibility = ViewStates.Gone;
+
+            text.EditorAction += Text_EditorAction;
+        }
+
+        private void Text_EditorAction(object sender, TextView.EditorActionEventArgs e)
+        {
+            if (e.ActionId == Android.Views.InputMethods.ImeAction.Search)
+            {
+                lastQuery = text.Text;
+                Paginator.Visibility = ViewStates.Gone;
+                PreviousPageButton.Enabled = false;
+                pageNumber = 1;
+                Search();
+            }
         }
 
         public void SearchButtonClicked(object sender, EventArgs e)
@@ -130,7 +145,7 @@ namespace Rule34
 
                     StreamReader reader = new StreamReader(response.GetResponseStream());
                     string responseText = reader.ReadToEnd();
-                    
+
                     string[] prompts = new string[responseText.Split("value\":\"").Length];
                     for (int i = 0; i < prompts.Length; i++)
                     {
@@ -160,20 +175,20 @@ namespace Rule34
 
             if (AutocompleteList.Visibility == ViewStates.Visible)
                 AutocompleteList.Visibility = ViewStates.Invisible;
-            
+
         }
 
         public async void Search()
         {
-            //try
-            //{
+            try
+            {
                 Paginator.Visibility = ViewStates.Gone;
                 AutocompleteList.Visibility = ViewStates.Invisible;
                 Output.Text = "";
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
                 string query = lastQuery.Replace(" ", "+");
-                
+
                 XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
 
                 if (response.ChildNodes[1].ChildNodes.Count < 1)
@@ -183,7 +198,7 @@ namespace Rule34
                 }
 
                 var Collection = PostsCollection.FromXml(response);
-                
+
                 for (int i = 0; i < Collection.posts.Count; i++)
                 {
                     await Task.Run(() =>
@@ -197,10 +212,10 @@ namespace Rule34
                             pictureUrl = Collection[i].Preview.Url;
 
                         byte[] bytesForImage = client.DownloadData(pictureUrl);
-                        
+
                         Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
                         PostThumbnail image = new PostThumbnail(this);
-                        
+
                         if (Picture != null)
                         {
 
@@ -208,7 +223,7 @@ namespace Rule34
 
                             image.SetImageBitmap(Picture);
                             image.SetPost(Collection[i]);
-                            
+
                             int height = (int)((float)Picture.Height / (float)Picture.Width * (float)Container.Width);
 
                             image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
@@ -221,7 +236,7 @@ namespace Rule34
                             };
                             image.LongClick += (object sender, View.LongClickEventArgs e) =>
                             {
-                                Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
+                                AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(this);
                                 builder.SetTitle("Download");
                                 builder.SetMessage("Do you really want to download this piece of image?");
                                 builder.SetPositiveButton("Yep", (object sender, Android.Content.DialogClickEventArgs e) =>
@@ -236,7 +251,7 @@ namespace Rule34
                                     long id = manager.Enqueue(downloadRequest);
                                 });
                                 builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
-                                Android.App.AlertDialog dialog = builder.Create();
+                                AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
                                 dialog.Show();
                             };
                         }
@@ -251,22 +266,23 @@ namespace Rule34
 
                 //PageNumberIndicator.Text = pageNumber.ToString();
 
-            UpdatePaginator();
+                UpdatePaginator();
 
                 Paginator.Visibility = ViewStates.Visible;
 
-            
-            
-            //}
-            //catch (Exception ex)
-            //{
-            //    Android.App.AlertDialog.Builder builder = new Android.App.AlertDialog.Builder(this);
-            //    builder.SetTitle("Oops");
-            //    builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
-            //    builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-            //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
-            //    builder.Create().Show();
-            //}
+
+
+            }
+            catch (Exception ex)
+            {
+                AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(this);
+
+                builder.SetTitle("Oops");
+                builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
+                builder.SetPositiveButton("Ok", (sender, eventargs) => { });
+                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
+                builder.Create().Show();
+            }
         }
 
         public async void UpdatePaginator()
@@ -296,9 +312,9 @@ namespace Rule34
             HttpWebRequest request = WebRequest.CreateHttp(RequestUrl);
 
             HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-            
+
             StreamReader responseReader = new StreamReader(response.GetResponseStream());
-            
+
             XmlDocument doc = new XmlDocument();
 
             doc.LoadXml(await responseReader.ReadToEndAsync());

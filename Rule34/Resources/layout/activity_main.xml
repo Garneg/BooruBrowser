@@ -41,6 +41,9 @@
                 android:layout_height="wrap_content"
                 android:minWidth="200dp"
                 android:maxWidth="290dp"
+                android:imeOptions="actionSearch"
+                android:inputType="textAutoComplete"
+                android:imeActionId="3"
                 android:id="@+id/autoCompleteTextView1" />
             <Button
                 android:text="Go"
@@ -93,6 +96,8 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:id="@+id/paginator">
+                    
+
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
