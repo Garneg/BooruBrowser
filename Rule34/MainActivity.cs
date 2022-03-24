@@ -15,6 +15,8 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Android.InputMethodServices;
+using Android.Views.InputMethods;
 
 
 namespace Rule34
@@ -182,6 +184,9 @@ namespace Rule34
         {
             try
             {
+                
+                InputMethodManager imm = (InputMethodManager)GetSystemService(InputMethodService);
+                imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
                 Paginator.Visibility = ViewStates.Gone;
                 AutocompleteList.Visibility = ViewStates.Invisible;
                 Output.Text = "";
