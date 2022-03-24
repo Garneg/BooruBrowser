@@ -5,11 +5,6 @@ VisualStudioVersion = 16.0.32126.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rule34", "Rule34\Rule34.csproj", "{144B923A-6833-4CC1-9FA7-EF8516FBED77}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{57045105-26BD-4544-9421-67125485B150}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\..\Pictures\Rule34 logo.png = ..\..\..\Pictures\Rule34 logo.png
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
