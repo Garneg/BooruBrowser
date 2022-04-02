@@ -19,7 +19,6 @@ using Android.InputMethodServices;
 using Android.Views.InputMethods;
 
 
-
 namespace Rule34
 {
 
@@ -47,7 +46,7 @@ namespace Rule34
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
-            
+
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
 
             Button searchBtn = FindViewById<Button>(Resource.Id.button1);
