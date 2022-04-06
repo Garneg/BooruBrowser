@@ -26,7 +26,6 @@ namespace Rule34
     public class MainActivity : AppCompatActivity
     {
         private AutoCompleteTextView text;
-        private TextView Output;
         private LinearLayout Container;
         private RelativeLayout relativeLayout;
         private int pageResultLimit = 10;
@@ -50,8 +49,6 @@ namespace Rule34
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
 
             Button searchBtn = FindViewById<Button>(Resource.Id.button1);
-            Output = FindViewById<TextView>(Resource.Id.textView1);
-            Output.Visibility = ViewStates.Gone;
             text = FindViewById<AutoCompleteTextView>(Resource.Id.autoCompleteTextView1);
             NextPageButton = FindViewById<Button>(Resource.Id.nextPageButton);
             PreviousPageButton = FindViewById<Button>(Resource.Id.previousPageButton);
@@ -157,7 +154,7 @@ namespace Rule34
                     new Handler(MainLooper).Post(() =>
                     {
                         AutocompleteList.Adapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
-                        AutocompleteList.SetY(text.TranslationY + text.Height + FindViewById<LinearLayout>(Resource.Id.linearLayout2).GetY());
+                        AutocompleteList.SetY(text.TranslationY + text.Height + FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY());
                         if (AutocompleteList.Visibility == ViewStates.Invisible)
                             AutocompleteList.Visibility = ViewStates.Visible;
                     });
@@ -189,10 +186,13 @@ namespace Rule34
                 imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
                 Paginator.Visibility = ViewStates.Gone;
                 AutocompleteList.Visibility = ViewStates.Invisible;
-                Output.Text = "";
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
                 string query = lastQuery.Replace(" ", "+");
+#if DEBUG
+                //Don't get it wrong, it's only for your comfort))
+                query += "+rating:safe";
+#endif
 
                 XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
 

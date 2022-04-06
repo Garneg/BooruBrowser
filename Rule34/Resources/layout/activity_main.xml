@@ -19,23 +19,34 @@
         android:layout_height="match_parent"
         android:id="@+id/linearLayout1"
         android:gravity="center_horizontal">
-        <ImageView
+        
+        <ScrollView
+            
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/scrollView1">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center">
+                <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/MikuTopImage"
             android:src="@drawable/topb"
             android:scaleType="fitXY"
             />
-
-
-        <LinearLayout
+                <LinearLayout
             android:orientation="horizontal"
             android:minWidth="100dp"
             android:minHeight="25dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:id="@+id/linearLayout2">
+            android:id="@+id/SearchBox">
             <AutoCompleteTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,25 +63,6 @@
                 android:layout_toRightOf="@id/linearLayout1"
                 android:id="@+id/button1" />
         </LinearLayout>
-
-        <TextView
-            android:layout_width="278.0dp"
-            android:layout_marginTop="30px"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/linearLayout1"
-            android:id="@+id/textView1"/>
-        <ScrollView
-            android:minWidth="25px"
-            android:minHeight="25px"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/scrollView1">
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="16dp"
-                android:gravity="center">
                 <LinearLayout
                     android:orientation="vertical"
                     android:minWidth="25px"
@@ -91,13 +83,21 @@
                     android:id="@+id/progressBar1"
                     android:visibility="gone"/>
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" 
+                    android:padding="8dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp" android:background="#a0a0a099"/>
+                </LinearLayout>
+                <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:minHeight="50dp"
                     android:gravity="center"
                     android:id="@+id/paginator">
                     
-
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -109,8 +109,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:text="Hello world"
+                        android:background="#3ba13b"
                         android:padding="8dp"
-                        android:background="@color/colorPrimary"
                         android:textColor="#fefefe"
                         android:id="@+id/pageNumberIndicator"/>
                     <Button
@@ -120,13 +120,6 @@
                         android:text="&gt;&gt;"
                         android:id="@+id/nextPageButton"/>
                 </LinearLayout>
-                <androidx.appcompat.view.menu.ExpandedMenuView
-                    android:minWidth="25px"
-                    android:minHeight="25dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#feeeff"
-                    android:id="@+id/expandedMenuView1"/>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
