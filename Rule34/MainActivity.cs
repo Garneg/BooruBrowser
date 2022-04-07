@@ -57,10 +57,11 @@ namespace Rule34
             Paginator = FindViewById<LinearLayout>(Resource.Id.paginator);
             PageNumberIndicator = FindViewById<TextView>(Resource.Id.pageNumberIndicator);
             progressBar1 = FindViewById<ProgressBar>(Resource.Id.progressBar1);
-            
+
             Paginator.SetPadding(Paginator.PaddingLeft, 0, Paginator.PaddingRight, Paginator.PaddingBottom);
 
             searchBtn.Click += SearchButtonClicked;
+
             text.AfterTextChanged += Text_AfterTextChanged;
             FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
             relativeLayout = FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
@@ -80,7 +81,7 @@ namespace Rule34
             text.EditorAction += Text_EditorAction;
 
             text.Hint = AppData.ReadLastQuery();
-            
+
         }
 
         private void Text_EditorAction(object sender, TextView.EditorActionEventArgs e)
@@ -97,11 +98,9 @@ namespace Rule34
 
         public void SearchButtonClicked(object sender, EventArgs e)
         {
+            if (text.Text == lastQuery)
+                return;
             lastQuery = text.Text;
-#if DEBUG
-            //Don't get it wrong, it's only for your comfort as a developer of such lewd app :)
-            lastQuery += "+rating:safe";
-#endif
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
@@ -110,21 +109,14 @@ namespace Rule34
 
         private void PreviousPageButton_Click(object sender, EventArgs e)
         {
-            ///Probably needs to be redone, but seems to be safe, if we will forgot to disable it
-            if (pageNumber > 1)
-            {
-                pageNumber--;
-                if (pageNumber == 1)
-                    PreviousPageButton.Enabled = false;
-                Search();
-            }
+            pageNumber--;
+            Search();
         }
 
         private void NextPageButton_Click(object sender, EventArgs e)
         {
             pageNumber++;
             Search();
-            PreviousPageButton.Enabled = true;
         }
 
         private void AutocompleteList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -170,7 +162,6 @@ namespace Rule34
                             AutocompleteList.Visibility = ViewStates.Visible;
                     });
                 });
-                //ArrayAdapter<string> arrayAdapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
 
             }
             catch (Exception ex)
@@ -198,7 +189,7 @@ namespace Rule34
                 AutocompleteList.Visibility = ViewStates.Invisible;
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
-                AppData.WriteLastQuery(lastQuery);
+                AppData.WriteLastQuery(lastQuery.Split(' ')[0]);
                 string query = lastQuery.Replace(" ", "+");
 
                 XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
