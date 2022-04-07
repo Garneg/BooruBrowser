@@ -39,6 +39,8 @@ namespace Rule34
         private TextView PageNumberIndicator;
         private ProgressBar progressBar1;
 
+        private int lastRequestHashCode = 0;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -55,6 +57,8 @@ namespace Rule34
             Paginator = FindViewById<LinearLayout>(Resource.Id.paginator);
             PageNumberIndicator = FindViewById<TextView>(Resource.Id.pageNumberIndicator);
             progressBar1 = FindViewById<ProgressBar>(Resource.Id.progressBar1);
+            
+            Paginator.SetPadding(Paginator.PaddingLeft, 0, Paginator.PaddingRight, Paginator.PaddingBottom);
 
             searchBtn.Click += SearchButtonClicked;
             text.AfterTextChanged += Text_AfterTextChanged;
@@ -74,6 +78,9 @@ namespace Rule34
             Paginator.Visibility = ViewStates.Gone;
 
             text.EditorAction += Text_EditorAction;
+
+            text.Hint = AppData.ReadLastQuery();
+            
         }
 
         private void Text_EditorAction(object sender, TextView.EditorActionEventArgs e)
@@ -91,6 +98,10 @@ namespace Rule34
         public void SearchButtonClicked(object sender, EventArgs e)
         {
             lastQuery = text.Text;
+#if DEBUG
+            //Don't get it wrong, it's only for your comfort as a developer of such lewd app :)
+            lastQuery += "+rating:safe";
+#endif
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
@@ -181,20 +192,18 @@ namespace Rule34
         {
             try
             {
-                
                 InputMethodManager imm = (InputMethodManager)GetSystemService(InputMethodService);
                 imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
                 Paginator.Visibility = ViewStates.Gone;
                 AutocompleteList.Visibility = ViewStates.Invisible;
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
+                AppData.WriteLastQuery(lastQuery);
                 string query = lastQuery.Replace(" ", "+");
-#if DEBUG
-                //Don't get it wrong, it's only for your comfort))
-                query += "+rating:safe";
-#endif
 
                 XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
+                int currentRequestHashCode = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}".GetHashCode();
+
 
                 if (response.ChildNodes[1].ChildNodes.Count < 1)
                 {
@@ -206,6 +215,8 @@ namespace Rule34
 
                 for (int i = 0; i < Collection.posts.Count; i++)
                 {
+                    if (currentRequestHashCode != lastRequestHashCode)
+                        return;
                     await Task.Run(() =>
                     {
                         WebClient client = new WebClient();
@@ -225,7 +236,6 @@ namespace Rule34
                         {
 
                             image.SetPadding(0, 10, 0, 10);
-
                             image.SetImageBitmap(Picture);
                             image.SetPost(Collection[i]);
 
@@ -260,12 +270,14 @@ namespace Rule34
                                 dialog.Show();
                             };
                         }
-                        RegisterForContextMenu(image);
-                        new Handler(MainLooper).Post(() =>
+                        if (currentRequestHashCode == lastRequestHashCode)
                         {
-                            Container.AddView(image);
-                        });
-
+                            RegisterForContextMenu(image);
+                            new Handler(MainLooper).Post(() =>
+                            {
+                                Container.AddView(image);
+                            });
+                        }
                     });
                 }
 
@@ -307,13 +319,12 @@ namespace Rule34
             {
                 NextPageButton.Enabled = false;
             }
-
             PageNumberIndicator.Text = pageNumber.ToString();
-
         }
 
         public async Task<XmlDocument> RequestXml(string RequestUrl)
         {
+            lastRequestHashCode = RequestUrl.GetHashCode();
             HttpWebRequest request = WebRequest.CreateHttp(RequestUrl);
 
             HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();

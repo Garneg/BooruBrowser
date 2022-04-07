@@ -73,6 +73,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppData.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Post.cs" />
     <Compile Include="PostThumbnail.cs" />
