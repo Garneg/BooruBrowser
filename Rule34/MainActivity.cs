@@ -302,7 +302,7 @@ namespace Rule34
                 });
 #if DEBUG 
                 stopwatch.Stop();
-                Toast.MakeText(this, stopwatch.Elapsed.ToString(), ToastLength.Short).Show();
+                Toast.MakeText(this, stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
 #endif
             }
             catch (Exception ex)
