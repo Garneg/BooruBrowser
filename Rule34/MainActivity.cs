@@ -17,6 +17,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Android.InputMethodServices;
 using Android.Views.InputMethods;
+using System.Timers;
+using System.Collections.Generic;
+
 
 
 namespace Rule34
@@ -84,19 +87,19 @@ namespace Rule34
 
         }
 
-        private void Text_EditorAction(object sender, TextView.EditorActionEventArgs e)
+        private async void Text_EditorAction(object sender, TextView.EditorActionEventArgs e)
         {
-            if (e.ActionId == Android.Views.InputMethods.ImeAction.Search)
+            if (e.ActionId == ImeAction.Search)
             {
                 lastQuery = text.Text;
                 Paginator.Visibility = ViewStates.Gone;
                 PreviousPageButton.Enabled = false;
                 pageNumber = 1;
-                Search();
+                await Search();
             }
         }
 
-        public void SearchButtonClicked(object sender, EventArgs e)
+        public async void SearchButtonClicked(object sender, EventArgs e)
         {
             if (text.Text == lastQuery)
                 return;
@@ -104,19 +107,19 @@ namespace Rule34
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
-            Search();
+            await Search();
         }
 
-        private void PreviousPageButton_Click(object sender, EventArgs e)
+        private async void PreviousPageButton_Click(object sender, EventArgs e)
         {
             pageNumber--;
-            Search();
+            await Search();
         }
 
-        private void NextPageButton_Click(object sender, EventArgs e)
+        private async void NextPageButton_Click(object sender, EventArgs e)
         {
             pageNumber++;
-            Search();
+            await Search();
         }
 
         private void AutocompleteList_ItemClick(object sender, AdapterView.ItemClickEventArgs e)
@@ -179,10 +182,13 @@ namespace Rule34
 
         }
 
-        public async void Search()
+        public async Task Search()
         {
             try
             {
+#if DEBUG 
+                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+#endif
                 InputMethodManager imm = (InputMethodManager)GetSystemService(InputMethodService);
                 imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
                 Paginator.Visibility = ViewStates.Gone;
@@ -195,7 +201,6 @@ namespace Rule34
                 XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
                 int currentRequestHashCode = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}".GetHashCode();
 
-
                 if (response.ChildNodes[1].ChildNodes.Count < 1)
                 {
                     Toast.MakeText(this, "Not found any image🤷‍♂️", ToastLength.Short).Show();
@@ -203,44 +208,42 @@ namespace Rule34
                 }
 
                 var Collection = PostsCollection.FromXml(response);
+                List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
 
                 for (int i = 0; i < Collection.posts.Count; i++)
                 {
                     if (currentRequestHashCode != lastRequestHashCode)
                         return;
+
                     await Task.Run(() =>
                     {
                         WebClient client = new WebClient();
+
+                        Post currentPost = Collection[i];
                         string pictureUrl;
 
-                        if (!Collection[i].Sample.Url.Contains(".mp4"))
-                            pictureUrl = Collection[i].Sample.Url;
-                        else
-                            pictureUrl = Collection[i].Preview.Url;
+                        byte[] previewBytes = client.DownloadData(currentPost.Preview.Url);
 
-                        byte[] bytesForImage = client.DownloadData(pictureUrl);
-
-                        Bitmap Picture = BitmapFactory.DecodeByteArray(bytesForImage, 0, bytesForImage.Length);
+                        Bitmap Preview = BitmapFactory.DecodeByteArray(previewBytes, 0, previewBytes.Length);
                         PostThumbnail image = new PostThumbnail(this);
 
-                        if (Picture != null)
-                        {
+                        postThumbnails.Add(image);
 
-                            image.SetPadding(0, 10, 0, 10);
-                            image.SetImageBitmap(Picture);
-                            image.SetPost(Collection[i]);
+                        image.SetPadding(0, 10, 0, 10);
+                        image.SetImageBitmap(Preview);
+                        image.SetPost(currentPost);
 
-                            int height = (int)((float)Picture.Height / (float)Picture.Width * (float)Container.Width);
+                        int height = (int)((float)Preview.Height / (float)Preview.Width * (float)Container.Width);
 
-                            image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
+                        image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
 
-                            image.SetScaleType(ImageView.ScaleType.FitXy);
+                        image.SetScaleType(ImageView.ScaleType.FitXy);
 
-                            image.Click += (object sender, EventArgs e) =>
+                        image.Click += (object sender, EventArgs e) =>
                             {
                                 Toast.MakeText(this, $"Tags of post: {string.Join(' ', image.GetPost().Tags)}", ToastLength.Short).Show();
                             };
-                            image.LongClick += (object sender, View.LongClickEventArgs e) =>
+                        image.LongClick += (object sender, View.LongClickEventArgs e) =>
                             {
                                 AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(this);
                                 builder.SetTitle("Download");
@@ -260,26 +263,47 @@ namespace Rule34
                                 AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
                                 dialog.Show();
                             };
-                        }
+
                         if (currentRequestHashCode == lastRequestHashCode)
                         {
-                            RegisterForContextMenu(image);
-                            new Handler(MainLooper).Post(() =>
+                            Task.Run(() =>
                             {
-                                Container.AddView(image);
+                                new Handler(MainLooper).Post(() =>
+                                {
+                                    Container.AddView(image);
+                                });
                             });
                         }
+
                     });
+
                 }
-
-                //PageNumberIndicator.Text = pageNumber.ToString();
-
                 UpdatePaginator();
-
                 Paginator.Visibility = ViewStates.Visible;
+                await Task.Run(() =>
+                {
+                    Parallel.For(0, Collection.posts.Count, i =>
+                    {
+                        WebClient client = new WebClient();
 
+                        if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
+                            return;
+                        byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
 
-
+                        Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
+                        Task.Run(() =>
+                        {
+                            new Handler(MainLooper).Post(() =>
+                                {
+                                    postThumbnails[i].SetImageBitmap(Sample);
+                                });
+                        });
+                    });
+                });
+#if DEBUG 
+                stopwatch.Stop();
+                Toast.MakeText(this, stopwatch.Elapsed.ToString(), ToastLength.Short).Show();
+#endif
             }
             catch (Exception ex)
             {
@@ -297,7 +321,7 @@ namespace Rule34
         {
             string query = lastQuery.Replace(" ", "+");
             XmlDocument nextPageDocument = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber)}");
-            if (pageNumber > 2)
+            if (pageNumber > 1)
                 PreviousPageButton.Enabled = true;
             else
                 PreviousPageButton.Enabled = false;
