@@ -165,7 +165,6 @@ namespace Rule34
                             AutocompleteList.Visibility = ViewStates.Visible;
                     });
                 });
-
             }
             catch (Exception ex)
             {
@@ -188,6 +187,7 @@ namespace Rule34
             {
 #if DEBUG 
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                stopwatch.Start();
 #endif
                 InputMethodManager imm = (InputMethodManager)GetSystemService(InputMethodService);
                 imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
@@ -294,15 +294,15 @@ namespace Rule34
                         Task.Run(() =>
                         {
                             new Handler(MainLooper).Post(() =>
-                                {
-                                    postThumbnails[i].SetImageBitmap(Sample);
-                                });
+                            {
+                                postThumbnails[i].SetImageBitmap(Sample);
+                            });
                         });
                     });
                 });
 #if DEBUG 
                 stopwatch.Stop();
-                Toast.MakeText(this, stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
+                Toast.MakeText(this, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
 #endif
             }
             catch (Exception ex)
