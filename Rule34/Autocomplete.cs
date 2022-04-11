@@ -30,10 +30,40 @@ namespace Rule34
             for (int i = 0; i < autocompleteList.Count; i++)
             {
                 autocompleteLabel = autocompleteList[i].Label;
-                autocompleteList[i].PostsCount = int.Parse(
-                    autocompleteLabel.Substring(autocompleteLabel.IndexOf('('), autocompleteLabel.IndexOf(')') - autocompleteLabel.IndexOf(')')));
+                string postsCount = autocompleteLabel.Substring(autocompleteLabel.LastIndexOf('(') + 1, autocompleteLabel.Length - autocompleteLabel.LastIndexOf('(') - 2);
+                autocompleteList[i].PostsCount = int.Parse(postsCount);
             }
             return autocompleteList;
         }
+    }
+
+    public class AutocompleteListAdapter : ArrayAdapter
+    {
+        public Autocomplete[] autocompletes;
+        public AutocompleteListAdapter(Context context, int resource, Autocomplete[] objects) : base(context, resource, objects)
+        {
+            autocompletes = objects;
+        }
+
+        public override View GetView(int position, View convertView, ViewGroup parent)
+        {
+            Autocomplete prompt = autocompletes[position];
+            if (convertView == null)
+            {
+                convertView = LayoutInflater.FromContext(Context).Inflate(Resource.Layout.autocomplete_list_item, parent, false);
+            }
+            var autocompleteTag = convertView.FindViewById<TextView>(Resource.Id.autocomplete_item_label);
+            autocompleteTag.Text = prompt.Value;
+            var autocompletePostsCount = convertView.FindViewById<TextView>(Resource.Id.autocomplete_item_posts_count);
+            autocompletePostsCount.Text = prompt.PostsCount.ToString();
+            return convertView;
+        }
+
+        public new Autocomplete GetItem(int position)
+        {
+            return autocompletes[position];
+        }
+
+
     }
 }

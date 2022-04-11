@@ -35,6 +35,8 @@ namespace Rule34
         private int pageNumber = 1;
         private string lastQuery;
 
+        static int requestCount = 0;
+
         private ListView AutocompleteList;
         private Button NextPageButton;
         private Button PreviousPageButton;
@@ -130,7 +132,7 @@ namespace Rule34
             {
                 autocompletedText += queryWords[i] + ' ';
             }
-            autocompletedText += AutocompleteList.Adapter.GetItem(e.Position).ToString();
+            autocompletedText += (AutocompleteList.Adapter as AutocompleteListAdapter).GetItem(e.Position).Value;
             text.Text = autocompletedText + ' ';
             text.SetSelection(text.Text.Length);
             AutocompleteList.Visibility = ViewStates.Invisible;
@@ -138,38 +140,38 @@ namespace Rule34
 
         private async void Text_AfterTextChanged(object sender, Android.Text.AfterTextChangedEventArgs e)
         {
-            try
-            {
+            //try
+            //{
                 await Task.Run(() =>
                 {
+                    string firstText = text.Text;
+                    Task.Delay(250).Wait();
+                    if (text.Text != firstText)
+                    {
+                        return;
+                    }
+                    requestCount++;
                     string query = text.Text.Split(' ')[text.Text.Split(' ').Length - 1];
 
-                    HttpWebRequest request = WebRequest.CreateHttp($"https://rule34.xxx/autocomplete.php?q={query}");
-
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                    StreamReader reader = new StreamReader(response.GetResponseStream());
-                    string responseText = reader.ReadToEnd();
-
-                    string[] prompts = new string[responseText.Split("value\":\"").Length];
-                    for (int i = 0; i < prompts.Length; i++)
-                    {
-                        responseText = responseText.Substring(responseText.IndexOf("value\":\"") + "value\":\"".Length);
-                        prompts[i] = responseText.Substring(0, responseText.IndexOf('\"'));
-                    }
+                    WebClient client = new WebClient();
+                    
+                    string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
+                    
+                    Autocomplete[] autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText)).ToArray();
+                    
                     new Handler(MainLooper).Post(() =>
                     {
-                        AutocompleteList.Adapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, prompts);
+                        AutocompleteList.Adapter = new AutocompleteListAdapter(this, Resource.Layout.autocomplete_list_item, autocompletes);
                         AutocompleteList.SetY(text.TranslationY + text.Height + FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY());
                         if (AutocompleteList.Visibility == ViewStates.Invisible)
                             AutocompleteList.Visibility = ViewStates.Visible;
                     });
                 });
-            }
-            catch (Exception ex)
-            {
-                //Output.Text = "oh shit " + ex.Message + "|||" + ex.StackTrace;
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Output.Text = "oh shit " + ex.Message + "|||" + ex.StackTrace;
+            //}
         }
 
         public override void OnBackPressed()
@@ -185,6 +187,8 @@ namespace Rule34
         {
             try
             {
+                Toast.MakeText(this, requestCount.ToString(), ToastLength.Short).Show();
+                requestCount = 0;
 #if DEBUG 
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
                 stopwatch.Start();
