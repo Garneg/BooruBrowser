@@ -154,7 +154,6 @@ namespace Rule34
                     
                     string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
                     responseText = WebUtility.HtmlDecode(responseText);
-                    Xamarin.Essentials.Clipboard.SetTextAsync(responseText);
                     Autocomplete[] autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText)).ToArray();
                     
                     new Handler(MainLooper).Post(() =>
