@@ -17,7 +17,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Android.InputMethodServices;
 using Android.Views.InputMethods;
-using System.Timers;
 using System.Collections.Generic;
 
 
@@ -34,8 +33,6 @@ namespace Rule34
         private int pageResultLimit = 10;
         private int pageNumber = 1;
         private string lastQuery;
-
-        static int requestCount = 0;
 
         private ListView AutocompleteList;
         private Button NextPageButton;
@@ -140,8 +137,8 @@ namespace Rule34
 
         private async void Text_AfterTextChanged(object sender, Android.Text.AfterTextChangedEventArgs e)
         {
-            //try
-            //{
+            try
+            {
                 await Task.Run(() =>
                 {
                     string firstText = text.Text;
@@ -150,13 +147,14 @@ namespace Rule34
                     {
                         return;
                     }
-                    requestCount++;
                     string query = text.Text.Split(' ')[text.Text.Split(' ').Length - 1];
 
                     WebClient client = new WebClient();
+                    client.Encoding = System.Text.Encoding.UTF8;
                     
                     string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
-                    
+                    responseText = WebUtility.HtmlDecode(responseText);
+                    Xamarin.Essentials.Clipboard.SetTextAsync(responseText);
                     Autocomplete[] autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText)).ToArray();
                     
                     new Handler(MainLooper).Post(() =>
@@ -167,11 +165,13 @@ namespace Rule34
                             AutocompleteList.Visibility = ViewStates.Visible;
                     });
                 });
-            //}
-            //catch (Exception ex)
-            //{
-            //    Output.Text = "oh shit " + ex.Message + "|||" + ex.StackTrace;
-            //}
+            }
+            catch (Exception ex)
+            {
+#if DEBUG 
+                Toast.MakeText(this, "Error occured: " + ex.Message, ToastLength.Short).Show();
+#endif
+            }
         }
 
         public override void OnBackPressed()
@@ -187,8 +187,7 @@ namespace Rule34
         {
             try
             {
-                Toast.MakeText(this, requestCount.ToString(), ToastLength.Short).Show();
-                requestCount = 0;
+                
 #if DEBUG 
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
                 stopwatch.Start();
