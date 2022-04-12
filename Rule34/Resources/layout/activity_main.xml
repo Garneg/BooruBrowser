@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -10,15 +10,35 @@
     android:minHeight="25px"
     android:gravity="center"
     android:foregroundGravity="center"
-    android:id="@+id/relativeLayout1">
-    <LinearLayout
-        android:orientation="vertical"
-        android:minWidth="25px"
-        android:minHeight="25px"
+    android:orientation="vertical"
+    android:id="@+id/linearLayout1">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:title="@string/app_name"
+            android:layout_gravity="right">
+
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/linearLayout1"
-        android:gravity="center_horizontal">
+        android:id="@+id/relativeLayout1">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
         <ScrollView
             android:minWidth="25px"
@@ -128,6 +148,6 @@
                 </LinearLayout>
             </LinearLayout>
         </ScrollView>
-    </LinearLayout>
+    </RelativeLayout>
 
-</RelativeLayout>
+</LinearLayout>

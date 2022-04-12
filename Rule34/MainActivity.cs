@@ -24,7 +24,7 @@ using System.Collections.Generic;
 namespace Rule34
 {
 
-    [Activity(Label = "@string/app_name", Theme = "@style/AppTheme", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
         private AutoCompleteTextView text;
@@ -153,7 +153,8 @@ namespace Rule34
                     client.Encoding = System.Text.Encoding.UTF8;
                     
                     string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
-                    responseText = WebUtility.HtmlDecode(responseText);
+                    responseText = WebUtility.HtmlDecode(responseText);                    
+                    
                     Autocomplete[] autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText)).ToArray();
                     
                     new Handler(MainLooper).Post(() =>
