@@ -80,6 +80,7 @@
     <Compile Include="PostThumbnail.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SearchFragment.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -147,6 +148,11 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\autocomplete_list_item.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\search_fragment.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
