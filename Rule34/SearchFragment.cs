@@ -28,7 +28,6 @@ namespace Rule34
 {
     public class SearchFragment : AndroidX.Fragment.App.Fragment
     {
-
         private AutoCompleteTextView text;
         private LinearLayout Container;
         private RelativeLayout relativeLayout;
@@ -67,7 +66,7 @@ namespace Rule34
             Paginator.SetPadding(Paginator.PaddingLeft, 0, Paginator.PaddingRight, Paginator.PaddingBottom);
 
             searchBtn.Click += SearchButtonClicked;
-
+            
             text.AfterTextChanged += Text_AfterTextChanged;
             Activity.FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
             relativeLayout = Activity.FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
@@ -256,7 +255,7 @@ namespace Rule34
                         {
                             Toast.MakeText(Activity, $"Tags of post: {string.Join(' ', image.GetPost().Tags)}", ToastLength.Short).Show();
                         };
-                        image.LongClick += (object sender, View.LongClickEventArgs e) =>
+                        image.LongClick += (sender, e) =>
                         {
                             AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
                             builder.SetTitle("Download");
@@ -287,9 +286,7 @@ namespace Rule34
                                 });
                             });
                         }
-
                     });
-
                 }
                 UpdatePaginator();
                 Paginator.Visibility = ViewStates.Visible;

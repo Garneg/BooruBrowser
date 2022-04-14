@@ -22,7 +22,6 @@ using System.Collections.Generic;
 
 namespace Rule34
 {
-
     [Activity(Label = "@string/app_name", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
@@ -40,7 +39,7 @@ namespace Rule34
             var transaction = SupportFragmentManager.BeginTransaction();
             transaction.Replace(Resource.Id.main_frame_layout, searchFragment);
             transaction.Commit();
-
+            
         }
 
         public override void OnBackPressed()
