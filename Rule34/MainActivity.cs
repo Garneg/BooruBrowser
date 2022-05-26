@@ -22,7 +22,9 @@ using System.Collections.Generic;
 
 namespace Rule34
 {
-    [Activity(Label = "@string/app_name", MainLauncher = true)]
+    [Activity(Label = "@string/app_name", MainLauncher = true, 
+        ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation,
+        ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait)]
     public class MainActivity : AppCompatActivity
     {
         SearchFragment searchFragment;

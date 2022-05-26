@@ -66,7 +66,7 @@ namespace Rule34
             Paginator.SetPadding(Paginator.PaddingLeft, 0, Paginator.PaddingRight, Paginator.PaddingBottom);
 
             searchBtn.Click += SearchButtonClicked;
-            
+
             text.AfterTextChanged += Text_AfterTextChanged;
             Activity.FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
             relativeLayout = Activity.FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
@@ -85,13 +85,31 @@ namespace Rule34
 
             text.EditorAction += Text_EditorAction;
 
-            text.Hint = AppData.ReadLastQuery();
+            var scrll = Activity.FindViewById<ScrollView>(Resource.Id.scrollView1);
+            scrll.ScrollChange += (s, e) => { HideAutocompleteList(); };
 
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             return inflater.Inflate(Resource.Layout.search_fragment, container, false);
+        }
+
+        public override void OnSaveInstanceState(Bundle outState)
+        {
+            base.OnSaveInstanceState(outState);
+
+        }
+
+        public override void OnViewStateRestored(Bundle savedInstanceState)
+        {
+            base.OnViewStateRestored(savedInstanceState);
+        }
+
+        public override void OnAttach(Context context)
+        {
+            base.OnAttach(context);
+
         }
 
 
@@ -153,26 +171,36 @@ namespace Rule34
                     string firstText = text.Text;
                     Task.Delay(250).Wait();
                     if (text.Text != firstText)
+                        return;
+
+                    string query = text.Text.Split(' ').Last();
+
+                    if (query == string.Empty)
                     {
+                        HideAutocompleteList();
                         return;
                     }
-                    string query = text.Text.Split(' ')[text.Text.Split(' ').Length - 1];
-
                     WebClient client = new WebClient();
-                    client.Encoding = System.Text.Encoding.UTF8;
+                    client.Encoding = Encoding.UTF8;
 
                     string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
                     responseText = WebUtility.HtmlDecode(responseText);
 
                     Autocomplete[] autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText)).ToArray();
-
-                    new Handler(Activity.MainLooper).Post(() =>
+                    if (autocompletes.Length > 0)
                     {
-                        AutocompleteList.Adapter = new AutocompleteListAdapter(Activity, Resource.Layout.autocomplete_list_item, autocompletes);
-                        AutocompleteList.SetY(text.TranslationY + text.Height + Activity.FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY());
-                        if (AutocompleteList.Visibility == ViewStates.Invisible)
-                            AutocompleteList.Visibility = ViewStates.Visible;
-                    });
+                        new Handler(Activity.MainLooper).Post(() =>
+                        {
+                            AutocompleteList.Adapter = new AutocompleteListAdapter(Activity, Resource.Layout.autocomplete_list_item, autocompletes);
+                            AutocompleteList.SetY(text.TranslationY + text.Height + Activity.FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY());
+                            if (AutocompleteList.Visibility == ViewStates.Invisible)
+                                AutocompleteList.Visibility = ViewStates.Visible;
+                        });
+                    }
+                    else
+                    {
+                        HideAutocompleteList();
+                    }
                 });
             }
             catch (Exception ex)
@@ -253,14 +281,13 @@ namespace Rule34
 
                         image.Click += (object sender, EventArgs e) =>
                         {
-                            Toast.MakeText(Activity, $"Tags of post: {string.Join(' ', image.GetPost().Tags)}", ToastLength.Short).Show();
                         };
                         image.LongClick += (sender, e) =>
                         {
                             AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
                             builder.SetTitle("Download");
-                            builder.SetMessage("Do you really want to download this piece of image?");
-                            builder.SetPositiveButton("Yep", (object sender, Android.Content.DialogClickEventArgs e) =>
+                            builder.SetMessage("Do you want to download the content of this post?");
+                            builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
                             {
                                 DownloadManager manager = DownloadManager.FromContext(Activity);
                                 DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
@@ -346,7 +373,7 @@ namespace Rule34
             }
             PageNumberIndicator.Text = pageNumber.ToString();
         }
-        
+
         public async Task<XmlDocument> RequestXml(string RequestUrl)
         {
             lastRequestHashCode = RequestUrl.GetHashCode();

@@ -35,10 +35,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/relativeLayout1">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
         <ScrollView
             android:minWidth="25px"
             android:minHeight="25px"
@@ -72,6 +68,8 @@
                         android:imeOptions="actionSearch"
                         android:inputType="textAutoComplete"
                         android:imeActionId="3"
+                        android:hint="Type some tags..."
+                        
                         android:id="@+id/autoCompleteTextView1" />
                     <Button
                         android:text="Go"

@@ -75,8 +75,10 @@
   <ItemGroup>
     <Compile Include="AppData.cs" />
     <Compile Include="Autocomplete.cs" />
+    <Compile Include="FragmentsController.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Post.cs" />
+    <Compile Include="PostFragment.cs" />
     <Compile Include="PostThumbnail.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -153,6 +155,16 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\search_fragment.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\post_fragment_layout.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\tag_list_item.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
   </ItemGroup>
