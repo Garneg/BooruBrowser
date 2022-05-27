@@ -156,7 +156,7 @@ namespace Rule34
             {
                 autocompletedText += queryWords[i] + ' ';
             }
-            autocompletedText += (AutocompleteList.Adapter as AutocompleteListAdapter).GetItem(e.Position).Value;
+            autocompletedText += (AutocompleteList.Adapter as AutocompleteListAdapter).GetItem(e.Position).Tag;
             text.Text = autocompletedText + ' ';
             text.SetSelection(text.Text.Length);
             AutocompleteList.Visibility = ViewStates.Invisible;
@@ -168,6 +168,7 @@ namespace Rule34
             {
                 await Task.Run(() =>
                 {
+                    
                     string firstText = text.Text;
                     Task.Delay(250).Wait();
                     if (text.Text != firstText)
@@ -181,20 +182,20 @@ namespace Rule34
                         return;
                     }
                     WebClient client = new WebClient();
+
                     client.Encoding = Encoding.UTF8;
 
                     string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
                     responseText = WebUtility.HtmlDecode(responseText);
 
-                    Autocomplete[] autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText)).ToArray();
-                    if (autocompletes.Length > 0)
+                    var autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText));
+                    if (autocompletes.Count > 0)
                     {
                         new Handler(Activity.MainLooper).Post(() =>
                         {
-                            AutocompleteList.Adapter = new AutocompleteListAdapter(Activity, Resource.Layout.autocomplete_list_item, autocompletes);
+                            AutocompleteList.Adapter = new AutocompleteListAdapter(Activity, Resource.Layout.autocomplete_list_item, autocompletes.ToArray());
                             AutocompleteList.SetY(text.TranslationY + text.Height + Activity.FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY());
-                            if (AutocompleteList.Visibility == ViewStates.Invisible)
-                                AutocompleteList.Visibility = ViewStates.Visible;
+                            AutocompleteList.Visibility = ViewStates.Visible;
                         });
                     }
                     else
@@ -209,6 +210,7 @@ namespace Rule34
                 Toast.MakeText(Activity, "Error occured: " + ex.Message, ToastLength.Short).Show();
 #endif
             }
+
         }
 
         //public override void OnBackPressed()
@@ -237,9 +239,10 @@ namespace Rule34
                     Container.RemoveAllViews();
                 AppData.WriteLastQuery(lastQuery.Split(' ')[0]);
                 string query = lastQuery.Replace(" ", "+");
+                string requestURL = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}";
 
-                XmlDocument response = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}");
-                int currentRequestHashCode = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}".GetHashCode();
+                XmlDocument response = await RequestXml(requestURL);
+                int currentRequestHashCode = requestURL.GetHashCode();
 
                 if (response.ChildNodes[1].ChildNodes.Count < 1)
                 {

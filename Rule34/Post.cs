@@ -20,6 +20,9 @@ namespace Rule34
         [XmlElement("post")]
         public List<Post> posts;
 
+        [XmlAttribute("count")]
+        public int Count;
+
         public static PostsCollection FromXml(XmlDocument xmlDocument)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(PostsCollection));

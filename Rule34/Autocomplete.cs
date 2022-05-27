@@ -16,10 +16,11 @@ namespace Rule34
     [JsonSerializable(typeof(Autocomplete))]
     public class Autocomplete
     {
-        [JsonPropertyName("label")]
-        public string Label { get; set; }
         [JsonPropertyName("value")]
-        public string Value { get; set; }
+        public string Tag { get; set; }
+
+        [JsonPropertyName("label")]
+        public string label { get; set; }
 
         public int PostsCount { get; set; }
 
@@ -29,12 +30,13 @@ namespace Rule34
             string autocompleteLabel;
             for (int i = 0; i < autocompleteList.Count; i++)
             {
-                autocompleteLabel = autocompleteList[i].Label;
+                autocompleteLabel = autocompleteList[i].label;
                 string postsCount = autocompleteLabel.Substring(autocompleteLabel.LastIndexOf('(') + 1, autocompleteLabel.Length - autocompleteLabel.LastIndexOf('(') - 2);
                 autocompleteList[i].PostsCount = int.Parse(postsCount);
             }
             return autocompleteList;
         }
+
     }
 
     public class AutocompleteListAdapter : ArrayAdapter
@@ -53,7 +55,7 @@ namespace Rule34
                 convertView = LayoutInflater.FromContext(Context).Inflate(Resource.Layout.autocomplete_list_item, parent, false);
             }
             var autocompleteTag = convertView.FindViewById<TextView>(Resource.Id.autocomplete_item_label);
-            autocompleteTag.Text = prompt.Value;
+            autocompleteTag.Text = prompt.Tag;
             var autocompletePostsCount = convertView.FindViewById<TextView>(Resource.Id.autocomplete_item_posts_count);
             autocompletePostsCount.Text = prompt.PostsCount.ToString();
             return convertView;
