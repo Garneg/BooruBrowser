@@ -1,5 +1,5 @@
 # Rule34MobileApp
-Mobile application based on Xamarin.Android for browsing rule34 imageboard.
+Mobile application based on Xamarin.Android for browsing rule34 imageboard. Project is in early-alpha stage now and has minimal functionality.
 
 <img src="https://github.com/Garneg/Rule34MobileApp/blob/master/Images/Rule34%20logo.png" alt="" width="391" height="140" />
 
