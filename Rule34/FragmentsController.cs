@@ -16,22 +16,34 @@ namespace Rule34
 {
     public static class FragmentsController
     {
-        public static bool IsInitialized { get; private set; } = false;
+        private static List<AndroidX.Fragment.App.Fragment> fragmentsStack = new List<AndroidX.Fragment.App.Fragment>();
 
-        static SearchFragment searchFragment;
-        static PostFragment postFragment;
+        public static int FragmentsCount { get => fragmentsStack.Count; }
 
-        public static void Initialize()
+        public static void AddToStack(AndroidX.Fragment.App.Fragment fragment)
         {
-            searchFragment = new SearchFragment();
-            postFragment = new PostFragment();
+            fragmentsStack.Add(fragment);
         }
 
-        public static void SwitchToSearchFragment()
+        public static AndroidX.Fragment.App.Fragment GetLast()
         {
-            
+            return fragmentsStack.Count > 0 ? fragmentsStack.Last() : null;
+        }
+
+        public static AndroidX.Fragment.App.Fragment GetAndRemoveLast()
+        {
+            var last = GetLast();
+
+            RemoveLast();
+
+            return last;
+
         }
         
+        public static void RemoveLast()
+        {
+            fragmentsStack.RemoveAt(fragmentsStack.Count - 1);
+        }
 
     }
 }

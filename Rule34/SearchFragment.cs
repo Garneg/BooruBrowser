@@ -43,7 +43,7 @@ namespace Rule34
         private ProgressBar progressBar1;
 
         private int lastRequestHashCode = 0;
-
+        private string searchSortBy = "updated:desc";
         public override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -53,6 +53,7 @@ namespace Rule34
 
         public override void OnActivityCreated(Bundle savedInstanceState)
         {
+            
             base.OnActivityCreated(savedInstanceState);
 
             Button searchBtn = Activity.FindViewById<Button>(Resource.Id.button1);
@@ -88,6 +89,29 @@ namespace Rule34
             var scrll = Activity.FindViewById<ScrollView>(Resource.Id.scrollView1);
             scrll.ScrollChange += (s, e) => { HideAutocompleteList(); };
 
+            string[] spinnerAdapterArray = new string[] { "Latest", "Oldest", "Biggest Score" };
+
+            var spinner = Activity.FindViewById<Spinner>(Resource.Id.sortby_spinner);
+            spinner.Adapter = new ArrayAdapter<string>(Context, Android.Resource.Layout.SimpleListItem1, spinnerAdapterArray);
+            spinner.ItemSelected += SortBy_Spinner_ItemSelected;
+
+        }
+
+        private void SortBy_Spinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            switch (e.Position)
+            {
+                case 0:
+                    searchSortBy = "updated:desc";
+                    break;
+                case 1:
+                    searchSortBy = "updated:asc";
+                    break;
+                case 2:
+                    searchSortBy = "score:desc";
+                    break;
+            }
+            
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -117,7 +141,7 @@ namespace Rule34
         {
             if (e.ActionId == ImeAction.Search)
             {
-                lastQuery = text.Text;
+                lastQuery = $"sort:{searchSortBy}+{text.Text}";
                 Paginator.Visibility = ViewStates.Gone;
                 PreviousPageButton.Enabled = false;
                 pageNumber = 1;
@@ -129,7 +153,7 @@ namespace Rule34
         {
             if (text.Text == lastQuery)
                 return;
-            lastQuery = text.Text;
+            lastQuery = $"sort:{searchSortBy}+{text.Text}";
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
@@ -170,7 +194,7 @@ namespace Rule34
                 {
                     
                     string firstText = text.Text;
-                    Task.Delay(250).Wait();
+                    Task.Delay(100).Wait();
                     if (text.Text != firstText)
                         return;
 
@@ -194,7 +218,7 @@ namespace Rule34
                         new Handler(Activity.MainLooper).Post(() =>
                         {
                             AutocompleteList.Adapter = new AutocompleteListAdapter(Activity, Resource.Layout.autocomplete_list_item, autocompletes.ToArray());
-                            AutocompleteList.SetY(text.TranslationY + text.Height + Activity.FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY());
+                            AutocompleteList.SetY(text.TranslationY + text.Height + Activity.FindViewById<LinearLayout>(Resource.Id.SearchBox).GetY() - Activity.FindViewById<ScrollView>(Resource.Id.scrollView1).ScrollY);
                             AutocompleteList.Visibility = ViewStates.Visible;
                         });
                     }
@@ -271,7 +295,7 @@ namespace Rule34
                         PostThumbnail image = new PostThumbnail(Activity);
 
                         postThumbnails.Add(image);
-
+                       
                         image.SetPadding(0, 10, 0, 10);
                         image.SetImageBitmap(Preview);
                         image.SetPost(currentPost);
@@ -284,6 +308,11 @@ namespace Rule34
 
                         image.Click += (object sender, EventArgs e) =>
                         {
+                            //var transaction = Activity.SupportFragmentManager.BeginTransaction();
+                            //PostFragment fragment = new PostFragment(image.GetPost());
+                            //transaction.SetReorderingAllowed(true);
+                            //transaction.Replace(Resource.Id.main_frame_layout, fragment);
+                            //transaction.Commit();
                         };
                         image.LongClick += (sender, e) =>
                         {
@@ -399,4 +428,6 @@ namespace Rule34
                 AutocompleteList.Visibility = ViewStates.Invisible;
         }
     }
+
+    
 }

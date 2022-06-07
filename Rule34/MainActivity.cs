@@ -36,9 +36,9 @@ namespace Rule34
             SetContentView(Resource.Layout.activity_main);
 
             Window.SetFlags(WindowManagerFlags.Secure, WindowManagerFlags.Secure);
-
             searchFragment = new SearchFragment();
             var transaction = SupportFragmentManager.BeginTransaction();
+            transaction.SetReorderingAllowed(true);
             transaction.Replace(Resource.Id.main_frame_layout, searchFragment);
             transaction.Commit();
             
