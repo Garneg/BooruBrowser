@@ -292,8 +292,8 @@ namespace Rule34
 
         public async Task Search()
         {
-            try
-            {
+            //try
+            //{
 
 #if DEBUG
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -306,7 +306,7 @@ namespace Rule34
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
                 AppData.WriteLastQuery(lastQuery.Split(' ')[0]);
-                string query = lastQuery.Replace(" ", "+");
+                string query = lastQuery.Replace(' ', '+');
                 string requestURL = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}";
 
                 XmlDocument response = await RequestXml(requestURL);
@@ -365,6 +365,7 @@ namespace Rule34
                             builder.SetMessage("Do you want to download the content of this post?");
                             builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
                             {
+                                
                                 DownloadManager manager = DownloadManager.FromContext(Activity);
                                 DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
 
@@ -372,11 +373,41 @@ namespace Rule34
                                 downloadRequest.SetTitle(image.GetPost().Tags[0]);
                                 downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
                                     $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.LastIndexOf('.'))}");
-                                long id = manager.Enqueue(downloadRequest);
+
+                                new Handler(Activity.MainLooper).Post(() =>
+                                {
+                                    long id = manager.Enqueue(downloadRequest);
+
+                                });
                             });
                             builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
                             AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
-                            dialog.Show();
+                            //dialog.Show();
+
+                            string[] popupOptions = new string[] { "Download" };
+                            ListPopupWindow popupwindow = new ListPopupWindow(Activity);
+                            popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
+                            popupwindow.AnchorView = image;
+                            popupwindow.Modal = false;
+                            //popupwindow.InputMethodMode = ListPopupWindowInputMethodMode.NotNeeded;
+                            popupwindow.ItemClick += (s, e) =>
+                            {
+                                var popup = s as ListPopupWindow;
+                                var postThumb = popup.AnchorView as PostThumbnail;
+
+                                switch (e.Position)
+                                {
+                                    case 0:
+                                        dialog.Show();
+
+                                        break;
+
+                                }
+                                popup.Dismiss();
+                                
+                                
+                            };
+                            popupwindow.Show();
                         };
 
                         if (currentRequestHashCode == lastRequestHashCode)
@@ -404,6 +435,23 @@ namespace Rule34
                         byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
 
                         Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
+                        if (Sample.Width > 32766 && Sample.Width > Sample.Height)
+                        {
+                            float cropFactor = 32766f / Sample.Width;
+
+                            int cropedWidth = 32766;
+                            int cropedHeight = (int)((float)Sample.Height * cropFactor);
+
+                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                        } else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
+                        {
+                            float cropFactor = 32766f / Sample.Height;
+
+                            int cropedWidth = (int)((float)Sample.Width * cropFactor);
+                            int cropedHeight = 32766;
+
+                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                        }
                         Task.Run(() =>
                         {
                             new Handler(Activity.MainLooper).Post(() =>
@@ -417,17 +465,17 @@ namespace Rule34
                 stopwatch.Stop();
                 Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
 #endif
-            }
-            catch (Exception ex)
-            {
-                AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+            //}
+            //catch (Exception ex)
+            //{
+            //    AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
 
-                builder.SetTitle("Oops");
-                builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
-                builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
-                builder.Create().Show();
-            }
+            //    builder.SetTitle("Oops");
+            //    builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
+            //    builder.SetPositiveButton("Ok", (sender, eventargs) => { });
+            //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
+            //    builder.Create().Show();
+            //}
         }
 
         public async void UpdatePaginator()
