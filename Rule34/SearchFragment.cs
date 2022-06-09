@@ -43,7 +43,8 @@ namespace Rule34
         private ProgressBar progressBar1;
 
         private int lastRequestHashCode = 0;
-        private string searchSortBy = "updated:desc";
+        private string searchSortBy = "updated";
+        private string sortOrder = "desc";
         public override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -89,12 +90,31 @@ namespace Rule34
             var scrll = Activity.FindViewById<ScrollView>(Resource.Id.scrollView1);
             scrll.ScrollChange += (s, e) => { HideAutocompleteList(); };
 
-            string[] spinnerAdapterArray = new string[] { "Latest", "Oldest", "Biggest Score" };
+            string[] spinnerAdapterArray = new string[] { "Updated", "Score", "Id" };
 
             var spinner = Activity.FindViewById<Spinner>(Resource.Id.sortby_spinner);
             spinner.Adapter = new ArrayAdapter<string>(Context, Android.Resource.Layout.SimpleListItem1, spinnerAdapterArray);
             spinner.ItemSelected += SortBy_Spinner_ItemSelected;
 
+            string[] orderSpinnerAdapterArray = new string[] { "Descending", "Ascending" };
+
+            var orderSpinner = Activity.FindViewById<Spinner>(Resource.Id.order_spinner);
+            orderSpinner.Adapter = new ArrayAdapter<string>(Context, Android.Resource.Layout.SimpleListItem1, orderSpinnerAdapterArray);
+            orderSpinner.ItemSelected += OrderSpinner_ItemSelected;
+            
+        }
+
+        private void OrderSpinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
+        {
+            switch(e.Position)
+            {
+                case 0:
+                    sortOrder = "desc";
+                    break;
+                case 1:
+                    sortOrder = "asc";
+                    break;
+            }
         }
 
         private void SortBy_Spinner_ItemSelected(object sender, AdapterView.ItemSelectedEventArgs e)
@@ -102,14 +122,15 @@ namespace Rule34
             switch (e.Position)
             {
                 case 0:
-                    searchSortBy = "updated:desc";
+                    searchSortBy = "updated";
                     break;
                 case 1:
-                    searchSortBy = "updated:asc";
+                    searchSortBy = "score";
                     break;
                 case 2:
-                    searchSortBy = "score:desc";
+                    searchSortBy = "id";
                     break;
+                
             }
             
         }
@@ -141,7 +162,7 @@ namespace Rule34
         {
             if (e.ActionId == ImeAction.Search)
             {
-                lastQuery = $"sort:{searchSortBy}+{text.Text}";
+                lastQuery = $"sort:{searchSortBy}:{sortOrder}+{text.Text}";
                 Paginator.Visibility = ViewStates.Gone;
                 PreviousPageButton.Enabled = false;
                 pageNumber = 1;
@@ -153,7 +174,7 @@ namespace Rule34
         {
             if (text.Text == lastQuery)
                 return;
-            lastQuery = $"sort:{searchSortBy}+{text.Text}";
+            lastQuery = $"sort:{searchSortBy}:{sortOrder}+{text.Text}";
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
             pageNumber = 1;
@@ -194,7 +215,7 @@ namespace Rule34
                 {
                     
                     string firstText = text.Text;
-                    Task.Delay(100).Wait();
+                    Task.Delay(500).Wait();
                     if (text.Text != firstText)
                         return;
 

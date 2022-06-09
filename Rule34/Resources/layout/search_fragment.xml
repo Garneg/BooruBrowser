@@ -79,6 +79,7 @@
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:id="@+id/button1" />
                 </LinearLayout>
+                
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
@@ -92,6 +93,21 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/sortby_spinner"/>
+                    
+                </LinearLayout>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Order:"/>
+                    <Spinner
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/order_spinner"/>
                 </LinearLayout>
                 <LinearLayout
                     android:orientation="vertical"
