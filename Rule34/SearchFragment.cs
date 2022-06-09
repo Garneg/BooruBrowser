@@ -292,190 +292,191 @@ namespace Rule34
 
         public async Task Search()
         {
-            //try
-            //{
+            try
+            {
 
 #if DEBUG
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-                stopwatch.Start();
+            stopwatch.Start();
 #endif
-                InputMethodManager imm = (InputMethodManager)Activity.GetSystemService(Android.Content.Context.InputMethodService);
-                imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
-                Paginator.Visibility = ViewStates.Gone;
-                AutocompleteList.Visibility = ViewStates.Invisible;
-                if (Container.ChildCount > 0)
-                    Container.RemoveAllViews();
-                AppData.WriteLastQuery(lastQuery.Split(' ')[0]);
-                string query = lastQuery.Replace(' ', '+');
-                string requestURL = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}";
+            InputMethodManager imm = (InputMethodManager)Activity.GetSystemService(Android.Content.Context.InputMethodService);
+            imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
+            Paginator.Visibility = ViewStates.Gone;
+            AutocompleteList.Visibility = ViewStates.Invisible;
+            if (Container.ChildCount > 0)
+                Container.RemoveAllViews();
+            AppData.WriteLastQuery(lastQuery.Split(' ')[0]);
+            string query = lastQuery.Replace(' ', '+');
+            string requestURL = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}";
 
-                XmlDocument response = await RequestXml(requestURL);
-                int currentRequestHashCode = requestURL.GetHashCode();
+            XmlDocument response = await RequestXml(requestURL);
+            int currentRequestHashCode = requestURL.GetHashCode();
 
-                if (response.ChildNodes[1].ChildNodes.Count < 1)
-                {
-                    Toast.MakeText(Activity, "Not found any image🤷‍♂️", ToastLength.Short).Show();
+            if (response.ChildNodes[1].ChildNodes.Count < 1)
+            {
+                Toast.MakeText(Activity, "Not found any image🤷‍♂️", ToastLength.Short).Show();
+                return;
+            }
+
+            var Collection = PostsCollection.FromXml(response);
+            List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
+
+            for (int i = 0; i < Collection.posts.Count; i++)
+            {
+                if (currentRequestHashCode != lastRequestHashCode)
                     return;
-                }
 
-                var Collection = PostsCollection.FromXml(response);
-                List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
-
-                for (int i = 0; i < Collection.posts.Count; i++)
+                await Task.Run(() =>
                 {
-                    if (currentRequestHashCode != lastRequestHashCode)
-                        return;
+                    WebClient client = new WebClient();
 
-                    await Task.Run(() =>
+                    Post currentPost = Collection[i];
+                    string pictureUrl;
+
+                    byte[] previewBytes = client.DownloadData(currentPost.Preview.Url);
+
+                    Bitmap Preview = BitmapFactory.DecodeByteArray(previewBytes, 0, previewBytes.Length);
+                    PostThumbnail image = new PostThumbnail(Activity);
+
+                    postThumbnails.Add(image);
+
+                    image.SetPadding(0, 10, 0, 10);
+                    image.SetImageBitmap(Preview);
+                    image.SetPost(currentPost);
+
+                    int height = (int)((float)Preview.Height / (float)Preview.Width * (float)Container.Width);
+
+                    image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
+
+                    image.SetScaleType(ImageView.ScaleType.FitXy);
+
+                    image.Click += (object sender, EventArgs e) =>
                     {
-                        WebClient client = new WebClient();
-
-                        Post currentPost = Collection[i];
-                        string pictureUrl;
-
-                        byte[] previewBytes = client.DownloadData(currentPost.Preview.Url);
-
-                        Bitmap Preview = BitmapFactory.DecodeByteArray(previewBytes, 0, previewBytes.Length);
-                        PostThumbnail image = new PostThumbnail(Activity);
-
-                        postThumbnails.Add(image);
-
-                        image.SetPadding(0, 10, 0, 10);
-                        image.SetImageBitmap(Preview);
-                        image.SetPost(currentPost);
-
-                        int height = (int)((float)Preview.Height / (float)Preview.Width * (float)Container.Width);
-
-                        image.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, height);
-
-                        image.SetScaleType(ImageView.ScaleType.FitXy);
-
-                        image.Click += (object sender, EventArgs e) =>
-                        {
                             //var transaction = Activity.SupportFragmentManager.BeginTransaction();
                             //PostFragment fragment = new PostFragment(image.GetPost());
                             //transaction.SetReorderingAllowed(true);
                             //transaction.Replace(Resource.Id.main_frame_layout, fragment);
                             //transaction.Commit();
                         };
-                        image.LongClick += (sender, e) =>
+                    image.LongClick += (sender, e) =>
+                    {
+                        AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+                        builder.SetTitle("Download");
+                        builder.SetMessage("Do you want to download the content of this post?");
+                        builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
                         {
-                            AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
-                            builder.SetTitle("Download");
-                            builder.SetMessage("Do you want to download the content of this post?");
-                            builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
+
+                            DownloadManager manager = DownloadManager.FromContext(Activity);
+                            DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
+
+                            downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
+                            downloadRequest.SetTitle(image.GetPost().Tags[0]);
+                            downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
+                                $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.LastIndexOf('.'))}");
+
+                            new Handler(Activity.MainLooper).Post(() =>
                             {
-                                
-                                DownloadManager manager = DownloadManager.FromContext(Activity);
-                                DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
+                                long id = manager.Enqueue(downloadRequest);
 
-                                downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
-                                downloadRequest.SetTitle(image.GetPost().Tags[0]);
-                                downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
-                                    $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.LastIndexOf('.'))}");
-
-                                new Handler(Activity.MainLooper).Post(() =>
-                                {
-                                    long id = manager.Enqueue(downloadRequest);
-
-                                });
                             });
-                            builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
-                            AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
+                        });
+                        builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
+                        AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
                             //dialog.Show();
 
                             string[] popupOptions = new string[] { "Download" };
-                            ListPopupWindow popupwindow = new ListPopupWindow(Activity);
-                            popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
-                            popupwindow.AnchorView = image;
-                            popupwindow.Modal = false;
+                        ListPopupWindow popupwindow = new ListPopupWindow(Activity);
+                        popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
+                        popupwindow.AnchorView = image;
+                        popupwindow.Modal = false;
                             //popupwindow.InputMethodMode = ListPopupWindowInputMethodMode.NotNeeded;
                             popupwindow.ItemClick += (s, e) =>
+                        {
+                            var popup = s as ListPopupWindow;
+                            var postThumb = popup.AnchorView as PostThumbnail;
+
+                            switch (e.Position)
                             {
-                                var popup = s as ListPopupWindow;
-                                var postThumb = popup.AnchorView as PostThumbnail;
+                                case 0:
+                                    dialog.Show();
 
-                                switch (e.Position)
-                                {
-                                    case 0:
-                                        dialog.Show();
+                                    break;
 
-                                        break;
+                            }
+                            popup.Dismiss();
 
-                                }
-                                popup.Dismiss();
-                                
-                                
-                            };
-                            popupwindow.Show();
+
                         };
+                        popupwindow.Show();
+                    };
 
-                        if (currentRequestHashCode == lastRequestHashCode)
-                        {
-                            Task.Run(() =>
-                            {
-                                new Handler(Activity.MainLooper).Post(() =>
-                                {
-                                    Container.AddView(image);
-                                });
-                            });
-                        }
-                    });
-                }
-                UpdatePaginator();
-                Paginator.Visibility = ViewStates.Visible;
-                await Task.Run(() =>
-                {
-                    Parallel.For(0, Collection.posts.Count, i =>
+                    if (currentRequestHashCode == lastRequestHashCode)
                     {
-                        WebClient client = new WebClient();
-
-                        if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
-                            return;
-                        byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
-
-                        Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
-                        if (Sample.Width > 32766 && Sample.Width > Sample.Height)
-                        {
-                            float cropFactor = 32766f / Sample.Width;
-
-                            int cropedWidth = 32766;
-                            int cropedHeight = (int)((float)Sample.Height * cropFactor);
-
-                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
-                        } else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
-                        {
-                            float cropFactor = 32766f / Sample.Height;
-
-                            int cropedWidth = (int)((float)Sample.Width * cropFactor);
-                            int cropedHeight = 32766;
-
-                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
-                        }
                         Task.Run(() =>
                         {
                             new Handler(Activity.MainLooper).Post(() =>
                             {
-                                postThumbnails[i].SetImageBitmap(Sample);
+                                Container.AddView(image);
                             });
+                        });
+                    }
+                });
+            }
+            UpdatePaginator();
+            Paginator.Visibility = ViewStates.Visible;
+            await Task.Run(() =>
+            {
+                Parallel.For(0, Collection.posts.Count, i =>
+                {
+                    WebClient client = new WebClient();
+
+                    if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
+                        return;
+                    byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
+
+                    Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
+                    if (Sample.Width > 32766 && Sample.Width > Sample.Height)
+                    {
+                        float cropFactor = 32766f / Sample.Width;
+
+                        int cropedWidth = 32766;
+                        int cropedHeight = (int)((float)Sample.Height * cropFactor);
+
+                        Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                    }
+                    else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
+                    {
+                        float cropFactor = 32766f / Sample.Height;
+
+                        int cropedWidth = (int)((float)Sample.Width * cropFactor);
+                        int cropedHeight = 32766;
+
+                        Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                    }
+                    Task.Run(() =>
+                    {
+                        new Handler(Activity.MainLooper).Post(() =>
+                        {
+                            postThumbnails[i].SetImageBitmap(Sample);
                         });
                     });
                 });
-#if DEBUG 
-                stopwatch.Stop();
-                Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
+            });
+#if DEBUG
+            stopwatch.Stop();
+            Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
 #endif
-            //}
-            //catch (Exception ex)
-            //{
-            //    AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+        }
+            catch (Exception ex)
+            {
+                AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
 
-            //    builder.SetTitle("Oops");
-            //    builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
-            //    builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-            //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
-            //    builder.Create().Show();
-            //}
+        builder.SetTitle("Oops");
+                builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
+                builder.SetPositiveButton("Ok", (sender, eventargs) => { });
+                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
+                builder.Create().Show();
+}
         }
 
         public async void UpdatePaginator()
