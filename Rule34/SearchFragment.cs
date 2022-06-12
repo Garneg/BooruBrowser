@@ -31,7 +31,7 @@ namespace Rule34
         private AutoCompleteTextView text;
         private LinearLayout Container;
         private RelativeLayout relativeLayout;
-        private int pageResultLimit = 10;
+        private int pageResultLimit = 40;
         private int pageNumber = 1;
         private string lastQuery;
 
@@ -387,7 +387,7 @@ namespace Rule34
                             AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
                             //dialog.Show();
 
-                            string[] popupOptions = new string[] { "Download", "Vote Up" };
+                            string[] popupOptions = new string[] { "Download", "Vote Up", "Share" };
                             ListPopupWindow popupwindow = new ListPopupWindow(Activity);
                             popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
                             popupwindow.AnchorView = image;
@@ -396,6 +396,7 @@ namespace Rule34
                             popupwindow.ItemClick += (s, e) =>
                             {
                                 var popup = s as ListPopupWindow;
+                                popup.Dismiss();
                                 var postThumb = popup.AnchorView as PostThumbnail;
 
                                 switch (e.Position)
@@ -411,10 +412,23 @@ namespace Rule34
                                             Toast.MakeText(Activity, $"Voted! The score of this post now: {votesUpdated}", ToastLength.Short).Show();
                                             postThumb.GetPost().score = votesUpdated;
                                         }
+                                        else
+                                        {
+                                            Toast.MakeText(Activity, $"You have already voted up this post", ToastLength.Short).Show();
+                                        }
+                                        break;
+
+                                    case 2:
+                                        Intent shareIntent = new Intent();
+                                        shareIntent.SetAction(Intent.ActionSend);
+                                        shareIntent.PutExtra(Intent.ExtraText, $"https://rule34.xxx/index.php?page=post&s=view&id={postThumb.GetPost().postId}");
+                                        shareIntent.SetType("text/plain");
+
+                                        Intent secint = Intent.CreateChooser(shareIntent, "Share post");
+                                        StartActivity(secint);
                                         break;
 
                                 }
-                                popup.Dismiss();
 
 
                             };
