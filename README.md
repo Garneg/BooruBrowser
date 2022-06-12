@@ -12,7 +12,7 @@ Mobile application based on Xamarin.Android for browsing rule34 imageboard. Proj
 - Architecture refactoring
 - Settings
 - Dark Theme
-- Download Content
+- ~~Download Content~~
 - Optional History
 - Collection
 - Video Player
