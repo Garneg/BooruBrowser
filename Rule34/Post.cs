@@ -44,72 +44,72 @@ namespace Rule34
     public class Post
     {
         [XmlAttribute(AttributeName = "file_url")]
-        public string fileUrl { get; private set; }
+        public string fileUrl { get; set; }
 
         [XmlAttribute(AttributeName = "width")]
-        public int width { get; private set; }
+        public int width { get; set; }
 
         [XmlAttribute(AttributeName = "height")]
-        public int height { get; private set; }
+        public int height { get; set; }
 
         [XmlAttribute(AttributeName = "sample_url")]
-        public string sampleUrl { get; private set; }
+        public string sampleUrl { get; set; }
 
         [XmlAttribute(AttributeName = "sample_width")]
-        public int sampleWidth { get; private set; }
+        public int sampleWidth { get; set; }
 
         [XmlAttribute(AttributeName = "sample_height")]
-        public int sampleHeight { get; private set; }
+        public int sampleHeight { get; set; }
 
         [XmlAttribute(AttributeName = "preview_url")]
-        public string previewUrl { get; private set; }
+        public string previewUrl { get; set; }
 
         [XmlAttribute(AttributeName = "preview_width")]
-        public int previewWidth { get; private set; }
+        public int previewWidth { get; set; }
 
         [XmlAttribute(AttributeName = "preview_height")]
-        public int previewHeight { get; private set; }
+        public int previewHeight { get; set; }
 
 
 
         [XmlAttribute(AttributeName = "score")]
-        public int score { get; private set; }
+        public int score { get; set; }
 
         [XmlAttribute(AttributeName = "parent_id")]
-        public string parentId { get; private set; }
+        public string parentId { get; set; }
 
         [XmlAttribute(AttributeName = "has_children")]
-        public bool hasChildren { get; private set; }
+        public bool hasChildren { get; set; }
 
         [XmlAttribute(AttributeName = "source")]
-        public string source { get; private set; }
+        public string source { get; set; }
 
         [XmlAttribute(AttributeName = "has_comments")]
-        public bool hasComments { get; private set; }
+        public bool hasComments { get; set; }
 
         [XmlAttribute(AttributeName = "has_notes")]
-        public bool hasNotes { get; private set; }
+        public bool hasNotes { get; set; }
 
         [XmlAttribute(AttributeName = "status")]
-        public string status { get; private set; }
+        public string status { get; set; }
 
         [XmlAttribute(AttributeName = "creator_id")]
-        public long creatorId { get; private set; }
+        public long creatorId { get; set; }
 
         [XmlAttribute(AttributeName = "rating")]
-        public string Rating { get; private set; }
+        public string Rating { get; set; }
 
         [XmlAttribute(AttributeName = "tags")]
-        public string[] Tags { get; private set; }
+        public string[] Tags { get; set; }
 
         [XmlAttribute(AttributeName = "id")]
-        public long postId { get; private set; }
+        public long postId { get; set; }
 
         [XmlAttribute(AttributeName = "created_at")]
-        public string createdAt { get; private set; }
+        public string createdAt { get; set; }
 
         [XmlAttribute(AttributeName = "change")]
-        public long change { get; private set; }
+        public long change { get; set; }
 
         public ContentUnit Sample
         {

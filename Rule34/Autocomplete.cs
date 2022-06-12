@@ -22,7 +22,8 @@ namespace Rule34
         [JsonPropertyName("label")]
         public string label { get; set; }
 
-       
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
 
         public int PostsCount { get; set; }
 
