@@ -200,7 +200,7 @@ namespace Rule34
         {
             if ($"{GetSortQuery()}+{text.Text}" == lastQuery)
                 return;
-
+            autocompleteListWindow.Dismiss();
             lastQuery = $"{GetSortQuery()}+{text.Text}";
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
@@ -409,7 +409,7 @@ namespace Rule34
                                         if (postThumb.GetPost().score != votesUpdated)
                                         {
                                             Toast.MakeText(Activity, $"Voted! The score of this post now: {votesUpdated}", ToastLength.Short).Show();
-                                            postThumb.GetPost().postId = votesUpdated;
+                                            postThumb.GetPost().score = votesUpdated;
                                         }
                                         break;
 
