@@ -22,6 +22,8 @@ namespace Rule34
         [JsonPropertyName("label")]
         public string label { get; set; }
 
+       
+
         public int PostsCount { get; set; }
 
         public static List<Autocomplete> FromJson(JsonDocument document)

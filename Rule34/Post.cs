@@ -102,7 +102,7 @@ namespace Rule34
         [XmlAttribute(AttributeName = "tags")]
         public string[] Tags { get; private set; }
 
-        [XmlAttribute(AttributeName = "post_id")]
+        [XmlAttribute(AttributeName = "id")]
         public long postId { get; private set; }
 
         [XmlAttribute(AttributeName = "created_at")]

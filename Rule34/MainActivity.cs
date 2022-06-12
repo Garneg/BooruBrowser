@@ -44,9 +44,5 @@ namespace Rule34
             
         }
 
-        public override void OnBackPressed()
-        {
-            searchFragment.HideAutocompleteList();
-        }
     }
 }
