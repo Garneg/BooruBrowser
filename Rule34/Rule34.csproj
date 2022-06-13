@@ -44,7 +44,7 @@
     <BundleAssemblies>false</BundleAssemblies>
     <AndroidUseAapt2>true</AndroidUseAapt2>
     <MandroidI18n />
-    <AndroidEnableMultiDex>true</AndroidEnableMultiDex>
+    <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
     <Debugger>Xamarin</Debugger>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

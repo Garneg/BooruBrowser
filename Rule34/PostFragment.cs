@@ -14,10 +14,17 @@ namespace Rule34
     class PostFragment : AndroidX.Fragment.App.Fragment
     {
         private Post post;
-
-        public PostFragment(Post post) : base()
+        private PostThumbnail thumbnail;
+        private Android.Graphics.Bitmap bitmap;
+        public PostFragment() : base()
         {
-            this.post = post;
+
+        }
+
+        
+        public PostFragment(Android.Graphics.Bitmap bitmap)
+        {
+            this.bitmap = bitmap;
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -28,8 +35,13 @@ namespace Rule34
         public override void OnActivityCreated(Bundle savedInstanceState)
         {
             base.OnActivityCreated(savedInstanceState);
+            //Activity.FindViewById<ImageView>(Resource.Id.imageView1).SetImageResource(Resource.Drawable.topb);
 
-            Activity.FindViewById<ImageView>(Resource.Id.imageView1).SetImageResource(Resource.Drawable.topb);
+            if (bitmap!= null)
+            {
+                //Activity.FindViewById<ImageView>(Resource.Id.imageView1).SetImageBitmap(bitmap);
+                
+            }
             //Activity.FindViewById<ImageView>(Resource.Id.imageView1).SetBackgroundColor(Android.Graphics.Color.BlanchedAlmond);
 
 

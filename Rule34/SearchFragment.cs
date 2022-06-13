@@ -31,7 +31,7 @@ namespace Rule34
         private AutoCompleteTextView text;
         private LinearLayout Container;
         private RelativeLayout relativeLayout;
-        private int pageResultLimit = 40;
+        private int pageResultLimit = 10;
         private int pageNumber = 1;
         private string lastQuery;
 
@@ -48,6 +48,8 @@ namespace Rule34
         private string sortOrder = "desc";
 
         private ListPopupWindow autocompleteListWindow;
+
+        bool isWorking = true;
 
         public override void OnCreate(Bundle savedInstanceState)
         {
@@ -285,15 +287,6 @@ namespace Rule34
 
         }
 
-        //public override void OnBackPressed()
-        //{
-        //    //base.OnBackPressed();
-
-        //    if (AutocompleteList.Visibility == ViewStates.Visible)
-        //        AutocompleteList.Visibility = ViewStates.Invisible;
-
-        //}
-
         public async Task Search()
         {
             try
@@ -326,7 +319,7 @@ namespace Rule34
 
                 for (int i = 0; i < Collection.posts.Count; i++)
                 {
-                    if (currentRequestHashCode != lastRequestHashCode)
+                    if (currentRequestHashCode != lastRequestHashCode || !isWorking)
                         return;
 
                     await Task.Run(() =>
@@ -335,7 +328,7 @@ namespace Rule34
 
                         Post currentPost = Collection[i];
                         string pictureUrl;
-
+                        
                         byte[] previewBytes = client.DownloadData(currentPost.Preview.Url);
 
                         Bitmap Preview = BitmapFactory.DecodeByteArray(previewBytes, 0, previewBytes.Length);
@@ -355,11 +348,18 @@ namespace Rule34
 
                         image.Click += (object sender, EventArgs e) =>
                         {
-                            //var transaction = Activity.SupportFragmentManager.BeginTransaction();
-                            //PostFragment fragment = new PostFragment(image.GetPost());
-                            //transaction.SetReorderingAllowed(true);
-                            //transaction.Replace(Resource.Id.main_frame_layout, fragment);
-                            //transaction.Commit();
+                            isWorking = false;
+                            Task.Delay(300).Wait();
+                            new Handler(Activity.MainLooper).Post(() =>
+                            {
+                                var transaction = ParentFragmentManager.BeginTransaction();
+                                PostFragment fragment = new PostFragment(Preview);
+                                //transaction.SetReorderingAllowed(true);
+                                transaction.Replace(Resource.Id.main_frame_layout, fragment);
+                                transaction.Commit();
+
+                            });
+                            
                         };
                         image.LongClick += (sender, e) =>
                         {
@@ -368,7 +368,7 @@ namespace Rule34
                             builder.SetMessage("Do you want to download the content of this post?");
                             builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
                             {
-
+                                
                                 DownloadManager manager = DownloadManager.FromContext(Activity);
                                 DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
 
@@ -392,7 +392,6 @@ namespace Rule34
                             popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
                             popupwindow.AnchorView = image;
                             popupwindow.Modal = false;
-                            //popupwindow.InputMethodMode = ListPopupWindowInputMethodMode.NotNeeded;
                             popupwindow.ItemClick += (s, e) =>
                             {
                                 var popup = s as ListPopupWindow;
@@ -441,7 +440,9 @@ namespace Rule34
                             {
                                 new Handler(Activity.MainLooper).Post(() =>
                                 {
-                                    Container.AddView(image);
+                                    if (isWorking)
+                                        Container.AddView(image);
+                                    
                                 });
                             });
                         }
@@ -453,8 +454,10 @@ namespace Rule34
                 {
                     Parallel.For(0, Collection.posts.Count, i =>
                     {
+                        if (!isWorking)
+                            return;
                         WebClient client = new WebClient();
-
+                        
                         if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
                             return;
                         byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
@@ -482,6 +485,7 @@ namespace Rule34
                         {
                             new Handler(Activity.MainLooper).Post(() =>
                             {
+                                if (isWorking)
                                 postThumbnails[i].SetImageBitmap(Sample);
                             });
                         });
@@ -540,7 +544,14 @@ namespace Rule34
             return doc;
         }
 
-      
+        public override void OnPause()
+        {
+            base.OnPause();
+            Toast.MakeText(Context, "Search fragment paused", ToastLength.Short).Show();
+            Toast.MakeText(Context, this.IsResumed.ToString(), ToastLength.Short).Show();
+        }
+
+
     }
 
 
