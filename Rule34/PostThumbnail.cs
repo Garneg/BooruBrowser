@@ -17,13 +17,13 @@ namespace Rule34
 {
     public class PostThumbnail : ImageView
     {
-        private Post post;
-        public Post GetPost()
+        private BooruPost post;
+        public BooruPost GetPost()
         {
             return post;
         }
 
-        public void SetPost(Post post)
+        public void SetPost(BooruPost post)
         {
             this.post = post;
             

@@ -76,6 +76,7 @@
     <Compile Include="AppData.cs" />
     <Compile Include="Autocomplete.cs" />
     <Compile Include="FragmentsController.cs" />
+    <Compile Include="GelbooruApi.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Post.cs" />
     <Compile Include="PostFragment.cs" />

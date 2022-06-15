@@ -18,7 +18,7 @@ namespace Rule34
     public class PostsCollection
     {
         [XmlElement("post")]
-        public List<Post> posts;
+        public List<BooruPost> posts;
 
         [XmlAttribute("count")]
         public int Count;
@@ -30,18 +30,11 @@ namespace Rule34
             return (PostsCollection)serializer.Deserialize(reader);
         }
 
-        public Post this[int index]
-        {
-            get
-            {
-                return posts[index];
-            }
-        }
 
     }
     ///Remeber to encapsulate file sample and preview fields!!
     [Serializable, XmlRoot(ElementName = "post")]
-    public class Post
+    public class BooruPost
     {
         [XmlAttribute(AttributeName = "file_url")]
         public string fileUrl { get; set; }

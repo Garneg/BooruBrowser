@@ -289,8 +289,8 @@ namespace Rule34
 
         public async Task Search()
         {
-            try
-            {
+            //try
+            //{
 
 #if DEBUG
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -301,23 +301,22 @@ namespace Rule34
                 Paginator.Visibility = ViewStates.Gone;
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
-                AppData.WriteLastQuery(lastQuery.Split(' ')[0]);
                 string query = lastQuery.Replace(' ', '+');
-                string requestURL = $"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber - 1)}";
 
-                XmlDocument response = await RequestXml(requestURL);
-                int currentRequestHashCode = requestURL.GetHashCode();
+                int currentRequestHashCode = 0;
 
-                if (response.ChildNodes[1].ChildNodes.Count < 1)
+                
+                
+                var Collection = GelbooruApi.PostsList(query.Split('+'));//PostsCollection.FromXml(response);
+                List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
+
+                if (Collection.Length < 1)
                 {
                     Toast.MakeText(Activity, "Not found any image🤷‍♂️", ToastLength.Short).Show();
                     return;
                 }
 
-                var Collection = PostsCollection.FromXml(response);
-                List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
-
-                for (int i = 0; i < Collection.posts.Count; i++)
+                for (int i = 0; i < Collection.Length; i++)
                 {
                     if (currentRequestHashCode != lastRequestHashCode || !isWorking)
                         return;
@@ -326,7 +325,7 @@ namespace Rule34
                     {
                         WebClient client = new WebClient();
 
-                        Post currentPost = Collection[i];
+                        BooruPost currentPost = Collection[i];
                         string pictureUrl;
                         
                         byte[] previewBytes = client.DownloadData(currentPost.Preview.Url);
@@ -354,8 +353,9 @@ namespace Rule34
                             {
                                 var transaction = ParentFragmentManager.BeginTransaction();
                                 PostFragment fragment = new PostFragment(Preview);
-                                //transaction.SetReorderingAllowed(true);
                                 transaction.Replace(Resource.Id.main_frame_layout, fragment);
+                                transaction.SetReorderingAllowed(true);
+                                transaction.AddToBackStack("post_fragment");
                                 transaction.Commit();
 
                             });
@@ -448,11 +448,11 @@ namespace Rule34
                         }
                     });
                 }
-                UpdatePaginator();
+                //UpdatePaginator();
                 Paginator.Visibility = ViewStates.Visible;
                 await Task.Run(() =>
                 {
-                    Parallel.For(0, Collection.posts.Count, i =>
+                    Parallel.For(0, Collection.Length, i =>
                     {
                         if (!isWorking)
                             return;
@@ -495,17 +495,17 @@ namespace Rule34
                 stopwatch.Stop();
                 Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
 #endif
-            }
-            catch (Exception ex)
-            {
-                AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+            //}
+            //catch (Exception ex)
+            //{
+            //    AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
 
-                builder.SetTitle("Oops");
-                builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
-                builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
-                builder.Create().Show();
-            }
+            //    builder.SetTitle("Oops");
+            //    builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
+            //    builder.SetPositiveButton("Ok", (sender, eventargs) => { });
+            //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
+            //    builder.Create().Show();
+            //}
         }
 
         public async void UpdatePaginator()

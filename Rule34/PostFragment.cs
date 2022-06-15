@@ -13,7 +13,7 @@ namespace Rule34
 {
     class PostFragment : AndroidX.Fragment.App.Fragment
     {
-        private Post post;
+        private BooruPost post;
         private PostThumbnail thumbnail;
         private Android.Graphics.Bitmap bitmap;
         public PostFragment() : base()
