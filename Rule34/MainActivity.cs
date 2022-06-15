@@ -20,7 +20,7 @@ using Android.Views.InputMethods;
 using System.Collections.Generic;
 
 
-namespace Rule34
+namespace BooruBrowser
 {
     [Activity(Label = "@string/app_name", MainLauncher = true, 
         ConfigurationChanges = Android.Content.PM.ConfigChanges.Orientation,

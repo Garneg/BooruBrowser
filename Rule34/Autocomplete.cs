@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Rule34
+namespace BooruBrowser
 {
     [JsonSerializable(typeof(Autocomplete))]
     public class Autocomplete

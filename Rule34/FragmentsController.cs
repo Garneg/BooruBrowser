@@ -12,7 +12,7 @@ using AndroidX.AppCompat.App;
 
 
 
-namespace Rule34
+namespace BooruBrowser
 {
     public static class FragmentsController
     {

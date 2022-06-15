@@ -24,7 +24,7 @@ using System.Text.Json.Serialization;
 using Android.InputMethodServices;
 using Android.Views.InputMethods;
 
-namespace Rule34
+namespace BooruBrowser
 {
     public class SearchFragment : AndroidX.Fragment.App.Fragment
     {
@@ -256,7 +256,7 @@ namespace Rule34
 
                     client.Encoding = Encoding.UTF8;
 
-                    string responseText = client.DownloadString($"https://rule34.xxx/autocomplete.php?q={query}");
+                    string responseText = client.DownloadString($"https://BooruBrowser.xxx/autocomplete.php?q={query}");
                     responseText = WebUtility.HtmlDecode(responseText);
 
                     var autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText));
@@ -405,7 +405,7 @@ namespace Rule34
                                         break;
 
                                     case 1:
-                                        int votesUpdated = Rule34Api.VoteUp(postThumb.GetPost().postId);
+                                        int votesUpdated = 0;//BooruBrowserApi.VoteUp(postThumb.GetPost().postId);
                                         if (postThumb.GetPost().score != votesUpdated)
                                         {
                                             Toast.MakeText(Activity, $"Voted! The score of this post now: {votesUpdated}", ToastLength.Short).Show();
@@ -420,7 +420,7 @@ namespace Rule34
                                     case 2:
                                         Intent shareIntent = new Intent();
                                         shareIntent.SetAction(Intent.ActionSend);
-                                        shareIntent.PutExtra(Intent.ExtraText, $"https://rule34.xxx/index.php?page=post&s=view&id={postThumb.GetPost().postId}");
+                                        shareIntent.PutExtra(Intent.ExtraText, $"https://gelbooru.com/index.php?page=post&s=view&id={postThumb.GetPost().postId}");
                                         shareIntent.SetType("text/plain");
 
                                         Intent secint = Intent.CreateChooser(shareIntent, "Share post");
@@ -508,25 +508,7 @@ namespace Rule34
             //}
         }
 
-        public async void UpdatePaginator()
-        {
-            string query = lastQuery.Replace(" ", "+");
-            XmlDocument nextPageDocument = await RequestXml($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&limit={pageResultLimit}&tags={query}&pid={(pageNumber)}");
-            if (pageNumber > 1)
-                PreviousPageButton.Enabled = true;
-            else
-                PreviousPageButton.Enabled = false;
-
-            if (nextPageDocument.ChildNodes[1].ChildNodes.Count > 0)
-            {
-                NextPageButton.Enabled = true;
-            }
-            else
-            {
-                NextPageButton.Enabled = false;
-            }
-            PageNumberIndicator.Text = pageNumber.ToString();
-        }
+       
 
         public async Task<XmlDocument> RequestXml(string RequestUrl)
         {

@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Rule34
+namespace BooruBrowser
 {
     [Serializable, XmlRoot(ElementName = "posts")]
     public class PostsCollection

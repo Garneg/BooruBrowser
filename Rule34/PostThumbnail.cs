@@ -13,7 +13,7 @@ using System.Net;
 using Android.Graphics;
 
 
-namespace Rule34
+namespace BooruBrowser
 {
     public class PostThumbnail : ImageView
     {

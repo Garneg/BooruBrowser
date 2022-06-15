@@ -13,7 +13,7 @@ using System.Xml.Serialization;
 using System.Net;
 using System.IO;
 
-namespace Rule34
+namespace BooruBrowser
 {
     [XmlRoot(ElementName = "posts")]
     public class PostCollection
