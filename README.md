@@ -1,20 +1,15 @@
-# Rule34MobileApp
-Mobile application based on Xamarin.Android for browsing rule34 imageboard. Project is in early-alpha stage now and has minimal functionality.
-
-<img src="https://github.com/Garneg/Rule34MobileApp/blob/master/Images/Rule34%20logo.png" alt="" width="391" height="140" />
+# BooruBrowser
+Booru Browser(previously Rule34MobileApp) - Mobile application based on Xamarin.Android for browsing booru-based imageboards(such as Gelbooru and Danbooru). Project is in early-alpha stage now, has limited functionality and sketchy design.
 
 #### Advantages
 - Ad free
 - High speed
 - High quality images(loading samples, instead of preview)
 
-#### TODO:
-- Architecture refactoring
-- Settings
-- Dark Theme
-- ~~Download Content~~
-- Optional History
-- Collection
-- Video Player
-- UI and UX Improvements
-- Search Improvments
+### Boorus
+- [ ] [Gelbooru](Gelbooru.com) (Currently WIP)
+- [ ] [Danbooru](https://danbooru.donmai.us/)
+- [ ] [E621](e621.net)
+- [ ] [E926](e926.net)
+
+Consider suggesting your favorite booru site to add to this list❤
