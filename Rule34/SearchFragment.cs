@@ -32,7 +32,7 @@ namespace BooruBrowser
         private LinearLayout Container;
         private RelativeLayout relativeLayout;
         private int pageResultLimit = 10;
-        private int pageNumber = 1;
+        private int pageIndex = 0;
         private string lastQuery;
 
         private Button NextPageButton;
@@ -210,19 +210,19 @@ namespace BooruBrowser
             lastQuery = $"{GetSortQuery()}+{text.Text}";
             Paginator.Visibility = ViewStates.Gone;
             PreviousPageButton.Enabled = false;
-            pageNumber = 1;
+            pageIndex = 0;
             await Search();
         }
 
         private async void PreviousPageButton_Click(object sender, EventArgs e)
         {
-            pageNumber--;
+            pageIndex--;
             await Search();
         }
 
         private async void NextPageButton_Click(object sender, EventArgs e)
         {
-            pageNumber++;
+            pageIndex++;
             await Search();
         }
 
@@ -305,16 +305,17 @@ namespace BooruBrowser
 
                 int currentRequestHashCode = 0;
 
-                var Collection = GelbooruApi.PostsList(query.Split('+'));//PostsCollection.FromXml(response);
+                var searchResult = await GelbooruApi.SearchPosts(query.Split('+'), pageIndex, pageResultLimit);//PostsCollection.FromXml(response);
+                var Collection = searchResult.Posts;
                 List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
 
-                if (Collection.Length < 1)
+                if (Collection.Count < 1)
                 {
                     Toast.MakeText(Activity, "Not found any image🤷‍♂️", ToastLength.Short).Show();
                     return;
                 }
 
-                for (int i = 0; i < Collection.Length; i++)
+                for (int i = 0; i < Collection.Count; i++)
                 {
                     if (currentRequestHashCode != lastRequestHashCode || !isWorking)
                         return;
@@ -326,7 +327,7 @@ namespace BooruBrowser
                         BooruPost currentPost = Collection[i];
                         string pictureUrl;
                         
-                        byte[] previewBytes = client.DownloadData(currentPost.Preview.Url);
+                        byte[] previewBytes = client.DownloadData(currentPost.PreviewUrl);
 
                         Bitmap Preview = BitmapFactory.DecodeByteArray(previewBytes, 0, previewBytes.Length);
                         PostThumbnail image = new PostThumbnail(Activity);
@@ -368,12 +369,12 @@ namespace BooruBrowser
                             {
                                 
                                 DownloadManager manager = DownloadManager.FromContext(Activity);
-                                DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().File.Url));
+                                DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().FileUrl));
 
                                 downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
                                 downloadRequest.SetTitle(image.GetPost().Tags[0]);
                                 downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
-                                    $"{image.GetPost().File.Url.Substring(image.GetPost().File.Url.LastIndexOf('.'))}");
+                                    $"{image.GetPost().FileUrl.Substring(image.GetPost().FileUrl.LastIndexOf('.'))}");
 
                                 new Handler(Activity.MainLooper).Post(() =>
                                 {
@@ -404,10 +405,10 @@ namespace BooruBrowser
 
                                     case 1:
                                         int votesUpdated = 0;//BooruBrowserApi.VoteUp(postThumb.GetPost().postId);
-                                        if (postThumb.GetPost().score != votesUpdated)
+                                        if (postThumb.GetPost().Score != votesUpdated)
                                         {
                                             Toast.MakeText(Activity, $"Voted! The score of this post now: {votesUpdated}", ToastLength.Short).Show();
-                                            postThumb.GetPost().score = votesUpdated;
+                                            postThumb.GetPost().Score = votesUpdated;
                                         }
                                         else
                                         {
@@ -418,7 +419,7 @@ namespace BooruBrowser
                                     case 2:
                                         Intent shareIntent = new Intent();
                                         shareIntent.SetAction(Intent.ActionSend);
-                                        shareIntent.PutExtra(Intent.ExtraText, $"https://gelbooru.com/index.php?page=post&s=view&id={postThumb.GetPost().postId}");
+                                        shareIntent.PutExtra(Intent.ExtraText, $"https://gelbooru.com/index.php?page=post&s=view&id={postThumb.GetPost().PostId}");
                                         shareIntent.SetType("text/plain");
 
                                         Intent secint = Intent.CreateChooser(shareIntent, "Share post");
@@ -446,49 +447,49 @@ namespace BooruBrowser
                         }
                     });
                 }
-                //UpdatePaginator();
+                UpdatePaginator(searchResult.TotalPostsCount, searchResult.Offset, pageResultLimit);
                 Paginator.Visibility = ViewStates.Visible;
-                //await Task.Run(() =>
-                //{
-                //    Parallel.For(0, Collection.Length, i =>
-                //    {
-                //        if (!isWorking)
-                //            return;
-                //        WebClient client = new WebClient();
-                        
-                //        if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
-                //            return;
-                //        byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
+                await Task.Run(() =>
+                {
+                    Parallel.For(0, Collection.Count, i =>
+                    {
+                        if (!isWorking)
+                            return;
+                        WebClient client = new WebClient();
 
-                //        Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
-                //        if (Sample.Width > 32766 && Sample.Width > Sample.Height)
-                //        {
-                //            float cropFactor = 32766f / Sample.Width;
+                        if (postThumbnails[i].GetPost().FileUrl.Contains(".mp4"))
+                            return;
+                        byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().SampleUrl);
 
-                //            int cropedWidth = 32766;
-                //            int cropedHeight = (int)((float)Sample.Height * cropFactor);
+                        Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
+                        if (Sample.Width > 32766 && Sample.Width > Sample.Height)
+                        {
+                            float cropFactor = 32766f / Sample.Width;
 
-                //            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
-                //        }
-                //        else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
-                //        {
-                //            float cropFactor = 32766f / Sample.Height;
+                            int cropedWidth = 32766;
+                            int cropedHeight = (int)((float)Sample.Height * cropFactor);
 
-                //            int cropedWidth = (int)((float)Sample.Width * cropFactor);
-                //            int cropedHeight = 32766;
+                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                        }
+                        else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
+                        {
+                            float cropFactor = 32766f / Sample.Height;
 
-                //            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
-                //        }
-                //        Task.Run(() =>
-                //        {
-                //            new Handler(Activity.MainLooper).Post(() =>
-                //            {
-                //                if (isWorking)
-                //                postThumbnails[i].SetImageBitmap(Sample);
-                //            });
-                //        });
-                //    });
-                //});
+                            int cropedWidth = (int)((float)Sample.Width * cropFactor);
+                            int cropedHeight = 32766;
+
+                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                        }
+                        Task.Run(() =>
+                        {
+                            new Handler(Activity.MainLooper).Post(() =>
+                            {
+                                if (isWorking)
+                                    postThumbnails[i].SetImageBitmap(Sample);
+                            });
+                        });
+                    });
+                });
 #if DEBUG
                 stopwatch.Stop();
                 //Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
@@ -500,7 +501,7 @@ namespace BooruBrowser
 
                 foreach(var exitem in ex.InnerExceptions)
                 {
-                    innerex += exitem.Message + exitem.StackTrace + '\n';
+                    innerex += exitem.Message + '\n';
                 }
 
                 AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
@@ -529,6 +530,32 @@ namespace BooruBrowser
             doc.LoadXml(await responseReader.ReadToEndAsync());
 
             return doc;
+        }
+
+        public void UpdatePaginator(int totalPosts, int offset, int limit)
+        {
+            int thisPageNumber = offset / limit + 1;
+
+            PageNumberIndicator.Text = thisPageNumber.ToString();
+
+            if (offset + limit < totalPosts)
+            {
+                NextPageButton.Enabled = true;
+            }
+            else
+            {
+                NextPageButton.Enabled = false;
+            }
+
+            if (offset == 0)
+            {
+                PreviousPageButton.Enabled = false;
+            }
+            else
+            {
+                PreviousPageButton.Enabled = true;
+            }
+
         }
 
         public override void OnPause()

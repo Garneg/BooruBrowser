@@ -14,113 +14,62 @@ using System.IO;
 
 namespace BooruBrowser
 {
-    [Serializable, XmlRoot(ElementName = "posts")]
-    public class PostsCollection
+    public class BooruSearchResult
     {
-        [XmlElement("post")]
-        public List<BooruPost> posts;
+        public List<BooruPost> Posts;
 
-        [XmlAttribute("count")]
-        public int Count;
+        public int TotalPostsCount;
 
-        public static PostsCollection FromXml(XmlDocument xmlDocument)
-        {
-            XmlSerializer serializer = new XmlSerializer(typeof(PostsCollection));
-            TextReader reader = new StringReader(xmlDocument.ChildNodes[1].OuterXml);
-            return (PostsCollection)serializer.Deserialize(reader);
-        }
-
+        public int Offset;
 
     }
     ///Remeber to encapsulate file sample and preview fields!!
-    [Serializable, XmlRoot(ElementName = "post")]
     public class BooruPost
     {
-        [XmlAttribute(AttributeName = "file_url")]
-        public string fileUrl { get; set; }
+        public string FileUrl { get; set; }
 
-        [XmlAttribute(AttributeName = "width")]
-        public int width { get; set; }
+        public int Width { get; set; }
 
-        [XmlAttribute(AttributeName = "height")]
-        public int height { get; set; }
+        public int Height { get; set; }
 
-        [XmlAttribute(AttributeName = "sample_url")]
-        public string sampleUrl { get; set; }
+        public string SampleUrl { get; set; }
 
-        [XmlAttribute(AttributeName = "sample_width")]
-        public int sampleWidth { get; set; }
+        public int SampleWidth { get; set; }
 
-        [XmlAttribute(AttributeName = "sample_height")]
-        public int sampleHeight { get; set; }
+        public int SampleHeight { get; set; }
 
-        [XmlAttribute(AttributeName = "preview_url")]
-        public string previewUrl { get; set; }
+        public string PreviewUrl { get; set; }
 
-        [XmlAttribute(AttributeName = "preview_width")]
-        public int previewWidth { get; set; }
+        public int PreviewWidth { get; set; }
 
-        [XmlAttribute(AttributeName = "preview_height")]
-        public int previewHeight { get; set; }
+        public int PreviewHeight { get; set; }
 
 
+        public int Score { get; set; }
 
-        [XmlAttribute(AttributeName = "score")]
-        public int score { get; set; }
+        public string ParentId { get; set; }
 
-        [XmlAttribute(AttributeName = "parent_id")]
-        public string parentId { get; set; }
+        public bool HasChildren { get; set; }
 
-        [XmlAttribute(AttributeName = "has_children")]
-        public bool hasChildren { get; set; }
+        public string Source { get; set; }
 
-        [XmlAttribute(AttributeName = "source")]
-        public string source { get; set; }
+        public bool HasComments { get; set; }
 
-        [XmlAttribute(AttributeName = "has_comments")]
-        public bool hasComments { get; set; }
+        public bool HasNotes { get; set; }
 
-        [XmlAttribute(AttributeName = "has_notes")]
-        public bool hasNotes { get; set; }
+        public string Status { get; set; }
 
-        [XmlAttribute(AttributeName = "status")]
-        public string status { get; set; }
+        public long CreatorId { get; set; }
 
-        [XmlAttribute(AttributeName = "creator_id")]
-        public long creatorId { get; set; }
-
-        [XmlAttribute(AttributeName = "rating")]
         public string Rating { get; set; }
 
-        [XmlAttribute(AttributeName = "tags")]
         public string[] Tags { get; set; }
 
-        [XmlAttribute(AttributeName = "id")]
-        public long postId { get; set; }
+        public long PostId { get; set; }
 
-        [XmlAttribute(AttributeName = "created_at")]
-        public string createdAt { get; set; }
+        public string CreatedAt { get; set; }
 
-        [XmlAttribute(AttributeName = "change")]
-        public long change { get; set; }
-
-        public ContentUnit Sample
-        {
-            get => new ContentUnit(sampleUrl, sampleWidth, sampleHeight);
-        }
-
-        public ContentUnit Preview
-        {
-            get => new ContentUnit(previewUrl, previewWidth, previewHeight);
-        }
-
-        public ContentUnit File
-        {
-            get => new ContentUnit(fileUrl, width, height);
-
-        }
-
-        
+        public long Change { get; set; }
 
     }
 

@@ -14,11 +14,12 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BooruBrowser
 {
     [XmlRoot(ElementName = "posts")]
-    public class SearchPage
+    public class GelbooruSearchResult
     {
         [XmlElement(ElementName = "post")]
         public List<GelbooruPost> Posts;
@@ -30,7 +31,7 @@ namespace BooruBrowser
         public int Offset;
 
         [XmlAttribute(AttributeName = "count")]
-        public int Count;
+        public int TotalPostsCount;
     }
 
     [XmlRoot(ElementName = "post")]
@@ -118,39 +119,48 @@ namespace BooruBrowser
 
     class GelbooruApi
     {
-        public static BooruPost[] PostsList(string[] tags, int limit = 10)
+        public async static Task<BooruSearchResult> SearchPosts(string[] tags, int pageNumber, int limit = 10)
         {
             WebClient client = new WebClient();
             ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, chainName) => { return true; };
-            string response = client.DownloadString($"https://gelbooru.com/index.php?page=dapi&s=post&q=index&tags={string.Join('+', tags)}&limit={limit}");
+            string response = await client.DownloadStringTaskAsync($"https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit={limit}&pid={pageNumber}&tags={string.Join('+', tags)}");
             var doc = new XmlDocument();
+            
             doc.LoadXml(response);
-            XmlSerializer serializer = new XmlSerializer(typeof(SearchPage));
+            XmlSerializer serializer = new XmlSerializer(typeof(GelbooruSearchResult));
             TextReader reader = new StringReader(doc.ChildNodes[1].OuterXml);
-            var result = (serializer.Deserialize(reader) as SearchPage).Posts;
-
+            var result = (serializer.Deserialize(reader) as GelbooruSearchResult);
+            var resultPosts = result.Posts;
             List<BooruPost> boorus = new List<BooruPost>();
 
-            foreach(var post in result)
+            foreach(var post in resultPosts)
             {
                 boorus.Add(new BooruPost()
                 {
-                    previewUrl = post.PreviewUrl,
-                    sampleUrl = post.SampleUrl ?? post.PreviewUrl,
-                    fileUrl = post.FileUrl,
+                    PreviewUrl = post.PreviewUrl,
+                    SampleUrl = post.SampleCount == 1 ? post.SampleUrl : post.FileUrl,
+                    FileUrl = post.FileUrl,
                     Tags = post.Tags.Split(' '),
-                    score = post.Score,
+                    Score = post.Score,
                     Rating = post.Rating,
-                    source = post.Source,
-                    width = post.Width,
-                    height = post.Height,
-                    previewWidth = post.PreviewWidth,
-                    previewHeight = post.PreviewHeight,
-                    sampleWidth = post.SampleCount == 1 ? post.SampleWidth : post.PreviewWidth,
-                    sampleHeight = post.SampleCount == 1 ? post.SampleHeight : post.PreviewHeight
+                    Source = post.Source,
+                    Width = post.Width,
+                    Height = post.Height,
+                    PreviewWidth = post.PreviewWidth,
+                    PreviewHeight = post.PreviewHeight,
+                    SampleWidth = post.SampleCount == 1 ? post.SampleWidth : post.Width,
+                    SampleHeight = post.SampleCount == 1 ? post.SampleHeight : post.Height
                 });
             }
-            return boorus.ToArray();
+
+            BooruSearchResult booruSearchResult = new BooruSearchResult()
+            {
+                Posts = boorus,
+                TotalPostsCount = result.TotalPostsCount,
+                Offset = result.Offset
+            };
+
+            return booruSearchResult;
 
         }
        
@@ -160,7 +170,6 @@ namespace BooruBrowser
             WebClient webClient = new WebClient();
             string response = WebUtility.HtmlDecode(webClient.DownloadString($"https://gelbooru.com//index.php?page=autocomplete2&term={part}"));
             var doc = JsonDocument.Parse(response);
-            var l = doc.RootElement.EnumerateArray().ToArray()[0];
             var autocompletes = JsonSerializer.Deserialize<List<GelbooruAutocompleteItem>>(doc);
 
             List<BooruAutocompleteItem> booruAutocompleteItems = new List<BooruAutocompleteItem>();

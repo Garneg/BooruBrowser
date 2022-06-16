@@ -159,8 +159,8 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="Hello world"
-                            android:background="#3ba13b"
                             android:padding="8dp"
+                            android:background="@color/colorPrimaryDark"
                             android:textColor="#fefefe"
                             android:textStyle="bold"
                             android:id="@+id/pageNumberIndicator"/>
