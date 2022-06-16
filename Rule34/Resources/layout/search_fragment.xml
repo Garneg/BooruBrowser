@@ -48,9 +48,9 @@
                 android:gravity="center">
                 <ImageView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/MikuTopImage"
-                    android:src="@drawable/topb"
+                    android:layout_height="60dp"
+                    android:id="@+id/top_booru_logo"
+                    android:src="@drawable/gelbooru"
                     android:scaleType="fitCenter"/>
                 <LinearLayout
                     android:orientation="horizontal"

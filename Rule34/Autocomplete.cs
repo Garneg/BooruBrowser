@@ -13,58 +13,39 @@ using System.Text.Json.Serialization;
 
 namespace BooruBrowser
 {
-    [JsonSerializable(typeof(Autocomplete))]
-    public class Autocomplete
+    public class BooruAutocompleteItem
     {
-        [JsonPropertyName("value")]
-        public string Tag { get; set; }
+        public string TagLabel { get; set; }
 
-        [JsonPropertyName("label")]
-        public string label { get; set; }
+        public string TagValue { get; set; }
 
-        [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string TagCategory { get; set; }
 
         public int PostsCount { get; set; }
-
-        public static List<Autocomplete> FromJson(JsonDocument document)
-        {
-            var autocompleteList = JsonSerializer.Deserialize<List<Autocomplete>>(document);
-            string autocompleteLabel;
-            for (int i = 0; i < autocompleteList.Count; i++)
-            {
-                autocompleteLabel = autocompleteList[i].label;
-                string postsCount = autocompleteLabel.Substring(autocompleteLabel.LastIndexOf('(') + 1, autocompleteLabel.Length - autocompleteLabel.LastIndexOf('(') - 2);
-                autocompleteList[i].PostsCount = int.Parse(postsCount);
-            }
-            return autocompleteList;
-        }
-
     }
 
     public class AutocompleteListAdapter : ArrayAdapter
     {
-        public Autocomplete[] autocompletes;
-        public AutocompleteListAdapter(Context context, int resource, Autocomplete[] objects) : base(context, resource, objects)
+        public BooruAutocompleteItem[] autocompletes;
+        public AutocompleteListAdapter(Context context, int resource, BooruAutocompleteItem[] objects) : base(context, resource, objects)
         {
             autocompletes = objects;
         }
 
         public override View GetView(int position, View convertView, ViewGroup parent)
         {
-            Autocomplete prompt = autocompletes[position];
-            if (convertView == null)
-            {
-                convertView = LayoutInflater.FromContext(Context).Inflate(Resource.Layout.autocomplete_list_item, parent, false);
-            }
+            BooruAutocompleteItem prompt = autocompletes[position];
+            
+            convertView ??= LayoutInflater.FromContext(Context).Inflate(Resource.Layout.autocomplete_list_item, parent, false);
+            
             var autocompleteTag = convertView.FindViewById<TextView>(Resource.Id.autocomplete_item_label);
-            autocompleteTag.Text = prompt.Tag;
+            autocompleteTag.Text = prompt.TagLabel ?? prompt.TagValue;
             var autocompletePostsCount = convertView.FindViewById<TextView>(Resource.Id.autocomplete_item_posts_count);
             autocompletePostsCount.Text = prompt.PostsCount.ToString();
             return convertView;
         }
 
-        public new Autocomplete GetItem(int position)
+        public new BooruAutocompleteItem GetItem(int position)
         {
             return autocompletes[position];
         }

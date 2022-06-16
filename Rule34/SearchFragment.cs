@@ -78,7 +78,7 @@ namespace BooruBrowser
 
 
             text.AfterTextChanged += Text_AfterTextChanged;
-            Activity.FindViewById<ImageView>(Resource.Id.MikuTopImage).SetImageResource(Resource.Drawable.topb);
+            //Activity.FindViewById<ImageView>(Resource.Id.top_booru_logo).SetImageResource(Resource.Drawable.topb);
             relativeLayout = Activity.FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
             Container = Activity.FindViewById<LinearLayout>(Resource.Id.container);
             NextPageButton.Click += NextPageButton_Click;
@@ -111,6 +111,10 @@ namespace BooruBrowser
             autocompleteListWindow.Height = (int)(150 * Resources.DisplayMetrics.Density);
 
             autocompleteListWindow.ItemClick += AutocompleteList_ItemClick;
+
+            text.ShowSoftInputOnFocus = true;
+
+            text.RequestFocus();
         }
 
        
@@ -227,7 +231,7 @@ namespace BooruBrowser
             var windowSender = sender as ListPopupWindow;
             List<string> tags = text.Text.Split(' ').SkipLast(1).ToList();
 
-            tags.Add((windowSender.ListView.Adapter as AutocompleteListAdapter).GetItem(e.Position).Tag);
+            tags.Add((windowSender.ListView.Adapter as AutocompleteListAdapter).GetItem(e.Position).TagValue);
             text.Text = string.Join(' ', tags.ToArray()) + ' ';
             text.SetSelection(text.Text.Length);
 
@@ -252,15 +256,9 @@ namespace BooruBrowser
                     {
                         return;
                     }
-                    WebClient client = new WebClient();
 
-                    client.Encoding = Encoding.UTF8;
-
-                    string responseText = client.DownloadString($"https://BooruBrowser.xxx/autocomplete.php?q={query}");
-                    responseText = WebUtility.HtmlDecode(responseText);
-
-                    var autocompletes = Autocomplete.FromJson(JsonDocument.Parse(responseText));
-                    if (autocompletes.Count > 0)
+                    var autocompletes = GelbooruApi.Autocomplete(query);
+                    if (autocompletes.Length > 0)
                     {
                         new Handler(Activity.MainLooper).Post(() =>
                         {
@@ -289,8 +287,8 @@ namespace BooruBrowser
 
         public async Task Search()
         {
-            //try
-            //{
+            try
+            {
 
 #if DEBUG
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
@@ -298,6 +296,8 @@ namespace BooruBrowser
 #endif
                 InputMethodManager imm = (InputMethodManager)Activity.GetSystemService(Android.Content.Context.InputMethodService);
                 imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
+
+            
                 Paginator.Visibility = ViewStates.Gone;
                 if (Container.ChildCount > 0)
                     Container.RemoveAllViews();
@@ -305,8 +305,6 @@ namespace BooruBrowser
 
                 int currentRequestHashCode = 0;
 
-                
-                
                 var Collection = GelbooruApi.PostsList(query.Split('+'));//PostsCollection.FromXml(response);
                 List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
 
@@ -450,62 +448,69 @@ namespace BooruBrowser
                 }
                 //UpdatePaginator();
                 Paginator.Visibility = ViewStates.Visible;
-                await Task.Run(() =>
-                {
-                    Parallel.For(0, Collection.Length, i =>
-                    {
-                        if (!isWorking)
-                            return;
-                        WebClient client = new WebClient();
+                //await Task.Run(() =>
+                //{
+                //    Parallel.For(0, Collection.Length, i =>
+                //    {
+                //        if (!isWorking)
+                //            return;
+                //        WebClient client = new WebClient();
                         
-                        if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
-                            return;
-                        byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
+                //        if (postThumbnails[i].GetPost().Sample.Url.Contains(".mp4"))
+                //            return;
+                //        byte[] sampleBytes = client.DownloadData(postThumbnails[i].GetPost().Sample.Url);
 
-                        Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
-                        if (Sample.Width > 32766 && Sample.Width > Sample.Height)
-                        {
-                            float cropFactor = 32766f / Sample.Width;
+                //        Bitmap Sample = BitmapFactory.DecodeByteArray(sampleBytes, 0, sampleBytes.Length);
+                //        if (Sample.Width > 32766 && Sample.Width > Sample.Height)
+                //        {
+                //            float cropFactor = 32766f / Sample.Width;
 
-                            int cropedWidth = 32766;
-                            int cropedHeight = (int)((float)Sample.Height * cropFactor);
+                //            int cropedWidth = 32766;
+                //            int cropedHeight = (int)((float)Sample.Height * cropFactor);
 
-                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
-                        }
-                        else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
-                        {
-                            float cropFactor = 32766f / Sample.Height;
+                //            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                //        }
+                //        else if (Sample.Height > 32766 && Sample.Height > Sample.Width)
+                //        {
+                //            float cropFactor = 32766f / Sample.Height;
 
-                            int cropedWidth = (int)((float)Sample.Width * cropFactor);
-                            int cropedHeight = 32766;
+                //            int cropedWidth = (int)((float)Sample.Width * cropFactor);
+                //            int cropedHeight = 32766;
 
-                            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
-                        }
-                        Task.Run(() =>
-                        {
-                            new Handler(Activity.MainLooper).Post(() =>
-                            {
-                                if (isWorking)
-                                postThumbnails[i].SetImageBitmap(Sample);
-                            });
-                        });
-                    });
-                });
+                //            Sample = Bitmap.CreateScaledBitmap(Sample, cropedWidth, cropedHeight, true);
+                //        }
+                //        Task.Run(() =>
+                //        {
+                //            new Handler(Activity.MainLooper).Post(() =>
+                //            {
+                //                if (isWorking)
+                //                postThumbnails[i].SetImageBitmap(Sample);
+                //            });
+                //        });
+                //    });
+                //});
 #if DEBUG
                 stopwatch.Stop();
-                Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
+                //Toast.MakeText(Activity, "Page load time: " + stopwatch.ElapsedMilliseconds.ToString(), ToastLength.Short).Show();
 #endif
-            //}
-            //catch (Exception ex)
-            //{
-            //    AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+            }
+            catch (AggregateException ex)
+            {
+                string innerex = string.Empty;
 
-            //    builder.SetTitle("Oops");
-            //    builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
-            //    builder.SetPositiveButton("Ok", (sender, eventargs) => { });
-            //    builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync("Message: " + ex.Message + "\nStacktrace: " + ex.StackTrace); });
-            //    builder.Create().Show();
-            //}
+                foreach(var exitem in ex.InnerExceptions)
+                {
+                    innerex += exitem.Message + exitem.StackTrace + '\n';
+                }
+
+                AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+
+                builder.SetTitle("Oops");
+                builder.SetMessage("Something went wrong. If this is not the first time you get error try to search by other tags");
+                builder.SetPositiveButton("Ok", (sender, eventargs) => { });
+                builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync(innerex); });
+                builder.Create().Show();
+            }
         }
 
        
@@ -533,6 +538,12 @@ namespace BooruBrowser
             Toast.MakeText(Context, this.IsResumed.ToString(), ToastLength.Short).Show();
         }
 
+        public override void OnResume()
+        {
+            base.OnResume();
+            Toast.MakeText(Context, "Search fragment resumed", ToastLength.Short).Show();
+
+        }
 
     }
 
