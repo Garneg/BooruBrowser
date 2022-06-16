@@ -7,9 +7,9 @@ Booru Browser(previously Rule34MobileApp) - Mobile application based on Xamarin.
 - High quality images(loading samples, instead of preview)
 
 ### Boorus
-- [ ] [Gelbooru](Gelbooru.com) (Currently WIP)
+- [ ] [Gelbooru](https://Gelbooru.com) (Currently WIP)
 - [ ] [Danbooru](https://danbooru.donmai.us/)
-- [ ] [E621](e621.net)
-- [ ] [E926](e926.net)
+- [ ] [E621](https://e621.net)
+- [ ] [E926](https://e926.net)
 
 Consider suggesting your favorite booru site to add to this list❤
