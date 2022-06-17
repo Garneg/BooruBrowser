@@ -35,146 +35,135 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/relativeLayout1">
-        <ScrollView
-            android:minWidth="25px"
-            android:minHeight="25px"
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/scrollView1">
+            android:layout_height="wrap_content"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:id="@+id/top_booru_logo"
+                android:src="@drawable/gelbooru"
+                android:scaleType="fitCenter"/>
             <LinearLayout
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:minWidth="100dp"
+                android:minHeight="25dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:id="@+id/SearchBox">
+                <AutoCompleteTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="200dp"
+                    android:maxWidth="290dp"
+                    android:imeOptions="actionSearch"
+                    android:inputType="textAutoComplete"
+                    android:imeActionId="3"
+                    android:hint="Type some tags..."
+                    android:id="@+id/autoCompleteTextView1" />
+                <Button
+                    android:text="Go"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/linearLayout1"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:id="@+id/button1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center">
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:id="@+id/top_booru_logo"
-                    android:src="@drawable/gelbooru"
-                    android:scaleType="fitCenter"/>
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:minWidth="100dp"
-                    android:minHeight="25dp"
+                android:padding="8dp">
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="Sort by:"/>
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/sortby_spinner"/>
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:id="@+id/order_spinner_container">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Order:"/>
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/order_spinner"/>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/search_fragment_recyclerview"/>
+
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:id="@+id/progressBar1"
+                android:visibility="gone"/>
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/Divider">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#a0a0a099"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="50dp"
                     android:gravity="center"
-                    android:id="@+id/SearchBox">
-                    <AutoCompleteTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:minWidth="200dp"
-                        android:maxWidth="290dp"
-                        android:imeOptions="actionSearch"
-                        android:inputType="textAutoComplete"
-                        android:imeActionId="3"
-                        android:hint="Type some tags..."
-                        
-                        android:id="@+id/autoCompleteTextView1" />
+                    android:paddingTop="16dp"
+                    android:id="@+id/paginator">
                     <Button
-                        android:text="Go"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toRightOf="@id/linearLayout1"
-                        style="@style/Widget.AppCompat.Button.Borderless"
-                        android:id="@+id/button1" />
-                </LinearLayout>
-                
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="8dp">
+                        android:layout_marginRight="8dp"
+                        android:text="&lt;&lt;"
+                        style="@style/Base.Widget.AppCompat.Button.Borderless"
+                        android:id="@+id/previousPageButton"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sort by:"/>
-                    <Spinner
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/sortby_spinner"/>
-                </LinearLayout>
-                <LinearLayout
-                    android:orientation="horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="8dp"
-                    android:id="@+id/order_spinner_container">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Order:"/>
-                    <Spinner
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/order_spinner"/>
-                </LinearLayout>
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:minWidth="25px"
-                    android:minHeight="25px"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/container"
-                    android:paddingTop="8dp"
-                    android:gravity="center"
-                    android:foregroundGravity="center">
-                </LinearLayout>
-                <ProgressBar
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:indeterminate="true"
-                    android:id="@+id/progressBar1"
-                    android:visibility="gone"/>
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/Divider">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#a0a0a099"/>
-                    </LinearLayout>
-                    <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="50dp"
                         android:gravity="center"
-                        android:paddingTop="16dp"
-                        android:id="@+id/paginator">
-                        <Button
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginRight="8dp"
-                            android:text="&lt;&lt;"
-                            style="@style/Base.Widget.AppCompat.Button.Borderless"
-                            android:id="@+id/previousPageButton"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:text="Hello world"
-                            android:padding="8dp"
-                            android:background="@color/colorPrimaryDark"
-                            android:textColor="#fefefe"
-                            android:textStyle="bold"
-                            android:id="@+id/pageNumberIndicator"/>
-                        <Button
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="8dp"
-                            android:text="&gt;&gt;"
-                            style="@style/Base.Widget.AppCompat.Button.Borderless"
-                            android:id="@+id/nextPageButton"/>
-                    </LinearLayout>
+                        android:text="Hello world"
+                        android:padding="8dp"
+                        android:background="@color/colorPrimaryDark"
+                        android:textColor="#fefefe"
+                        android:textStyle="bold"
+                        android:id="@+id/pageNumberIndicator"/>
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="8dp"
+                        android:text="&gt;&gt;"
+                        style="@style/Base.Widget.AppCompat.Button.Borderless"
+                        android:id="@+id/nextPageButton"/>
                 </LinearLayout>
             </LinearLayout>
-        </ScrollView>
+        </LinearLayout>
     </RelativeLayout>
 
 </LinearLayout>
