@@ -137,6 +137,7 @@ namespace BooruBrowser
             {
                 boorus.Add(new BooruPost()
                 {
+                    PostId = post.Id,
                     PreviewUrl = post.PreviewUrl,
                     SampleUrl = post.SampleCount == 1 ? post.SampleUrl : post.FileUrl,
                     FileUrl = post.FileUrl,

@@ -31,7 +31,7 @@ namespace BooruBrowser
     {
         private AutoCompleteTextView text;
         private RelativeLayout relativeLayout;
-        private int pageResultLimit = 10;
+        private int pageResultLimit = 1000;
         private int pageIndex = 0;
         private string lastQuery;
 
@@ -306,98 +306,101 @@ namespace BooruBrowser
                 }
 
                 SearchRecyclerViewAdapter searchRecyclerViewAdapter = new SearchRecyclerViewAdapter(Collection.ToArray());
-
+               
                 recyclerView.SetAdapter(searchRecyclerViewAdapter);
                 
 
-                //image.Click += (object sender, EventArgs e) =>
-                //{
-                //    isWorking = false;
-                //    Task.Delay(300).Wait();
-                //    new Handler(Activity.MainLooper).Post(() =>
-                //    {
-                //        var transaction = ParentFragmentManager.BeginTransaction();
-                //        PostFragment fragment = new PostFragment(Preview);
-                //        transaction.Replace(Resource.Id.main_frame_layout, fragment);
-                //        transaction.SetReorderingAllowed(true);
-                //        transaction.AddToBackStack("post_fragment");
-                //        transaction.Commit();
+                searchRecyclerViewAdapter.HolderClick += (object sender, Android.Support.V7.Widget.RecyclerView.ViewHolder holder) =>
+                {
+                    //isWorking = false;
+                    //Task.Delay(300).Wait();
+                    //new Handler(Activity.MainLooper).Post(() =>
+                    //{
+                    //    var transaction = ParentFragmentManager.BeginTransaction();
+                    //    PostFragment fragment = new PostFragment(Preview);
+                    //    transaction.Replace(Resource.Id.main_frame_layout, fragment);
+                    //    transaction.SetReorderingAllowed(true);
+                    //    transaction.AddToBackStack("post_fragment");
+                    //    transaction.Commit();
 
-                //    });
+                    //});
 
-                //};
-                //image.LongClick += (sender, e) =>
-                //{
-                //    AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
-                //    builder.SetTitle("Download");
-                //    builder.SetMessage("Do you want to download the content of this post?");
-                //    builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
-                //    {
+                };
+                searchRecyclerViewAdapter.HolderLongClick += (sender, e) =>
+                {
 
-                //        DownloadManager manager = DownloadManager.FromContext(Activity);
-                //        DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(image.GetPost().FileUrl));
+                    var searchrvholder = e as SearchRecyclerViewAdapterViewHolder;
 
-                //        downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
-                //        downloadRequest.SetTitle(image.GetPost().Tags[0]);
-                //        downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{image.GetPost().Tags[0]}" +
-                //            $"{image.GetPost().FileUrl.Substring(image.GetPost().FileUrl.LastIndexOf('.'))}");
+                    AndroidX.AppCompat.App.AlertDialog.Builder builder = new AndroidX.AppCompat.App.AlertDialog.Builder(Activity);
+                    builder.SetTitle("Download");
+                    builder.SetMessage("Do you want to download the content of this post?");
+                    builder.SetPositiveButton("Yes", (object sender, Android.Content.DialogClickEventArgs e) =>
+                    {
 
-                //        new Handler(Activity.MainLooper).Post(() =>
-                //        {
-                //            long id = manager.Enqueue(downloadRequest);
+                        DownloadManager manager = DownloadManager.FromContext(Activity);
+                        DownloadManager.Request downloadRequest = new DownloadManager.Request(Android.Net.Uri.Parse(searchrvholder.Post.FileUrl));
 
-                //        });
-                //    });
-                //    builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
-                //    AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
-                //    //dialog.Show();
+                        downloadRequest.SetNotificationVisibility(DownloadVisibility.VisibleNotifyCompleted);
+                        downloadRequest.SetTitle(searchrvholder.Post.Tags[0]);
+                        downloadRequest.SetDestinationInExternalPublicDir(Android.OS.Environment.DirectoryDownloads, $"{searchrvholder.Post.Tags[0]}" +
+                            $"{searchrvholder.Post.FileUrl.Substring(searchrvholder.Post.FileUrl.LastIndexOf('.'))}");
 
-                //    string[] popupOptions = new string[] { "Download", "Vote Up", "Share" };
-                //    ListPopupWindow popupwindow = new ListPopupWindow(Activity);
-                //    popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
-                //    popupwindow.AnchorView = image;
-                //    popupwindow.Modal = false;
-                //    popupwindow.ItemClick += (s, e) =>
-                //    {
-                //        var popup = s as ListPopupWindow;
-                //        popup.Dismiss();
-                //        var postThumb = popup.AnchorView as PostThumbnail;
+                        new Handler(Activity.MainLooper).Post(() =>
+                        {
+                            long id = manager.Enqueue(downloadRequest);
 
-                //        switch (e.Position)
-                //        {
-                //            case 0:
-                //                dialog.Show();
-                //                break;
+                        });
+                    });
+                    builder.SetNegativeButton("No", (object sender, Android.Content.DialogClickEventArgs e) => { });
+                    AndroidX.AppCompat.App.AlertDialog dialog = builder.Create();
+                    //dialog.Show();
 
-                //            case 1:
-                //                int votesUpdated = 0;//BooruBrowserApi.VoteUp(postThumb.GetPost().postId);
-                //                if (postThumb.GetPost().Score != votesUpdated)
-                //                {
-                //                    Toast.MakeText(Activity, $"Voted! The score of this post now: {votesUpdated}", ToastLength.Short).Show();
-                //                    postThumb.GetPost().Score = votesUpdated;
-                //                }
-                //                else
-                //                {
-                //                    Toast.MakeText(Activity, $"You have already voted up this post", ToastLength.Short).Show();
-                //                }
-                //                break;
+                    string[] popupOptions = new string[] { "Download", "Vote Up", "Share" };
+                    ListPopupWindow popupwindow = new ListPopupWindow(Activity);
+                    popupwindow.SetAdapter(new ArrayAdapter<string>(Activity, Android.Resource.Layout.SimpleListItem1, popupOptions));
+                    popupwindow.AnchorView = searchrvholder.ItemView;
+                    popupwindow.Modal = false;
+                    popupwindow.ItemClick += (s, e) =>
+                    {
+                        var popup = s as ListPopupWindow;
+                        popup.Dismiss();
+                        
 
-                //            case 2:
-                //                Intent shareIntent = new Intent();
-                //                shareIntent.SetAction(Intent.ActionSend);
-                //                shareIntent.PutExtra(Intent.ExtraText, $"https://gelbooru.com/index.php?page=post&s=view&id={postThumb.GetPost().PostId}");
-                //                shareIntent.SetType("text/plain");
+                        switch (e.Position)
+                        {
+                            case 0:
+                                dialog.Show();
+                                break;
 
-                //                Intent secint = Intent.CreateChooser(shareIntent, "Share post");
-                //                StartActivity(secint);
-                //                break;
+                            case 1:
+                                int votesUpdated = 0;//BooruBrowserApi.VoteUp(postThumb.GetPost().postId);
+                                if (searchrvholder.Post.Score != votesUpdated)
+                                {
+                                    Toast.MakeText(Activity, $"Voted! The score of this post now: {votesUpdated}", ToastLength.Short).Show();
+                                    searchrvholder.Post.Score = votesUpdated;
+                                }
+                                else
+                                {
+                                    Toast.MakeText(Activity, $"You have already voted up this post", ToastLength.Short).Show();
+                                }
+                                break;
 
-                //        }
+                            case 2:
+                                Intent shareIntent = new Intent();
+                                shareIntent.SetAction(Intent.ActionSend);
+                                shareIntent.PutExtra(Intent.ExtraText, $"https://gelbooru.com/index.php?page=post&s=view&id={searchrvholder.Post.PostId}");
+                                shareIntent.SetType("text/plain");
+
+                                Intent secint = Intent.CreateChooser(shareIntent, "Share post");
+                                StartActivity(secint);
+                                break;
+
+                        }
 
 
-                //    };
-                //    popupwindow.Show();
-                //};
+                    };
+                    popupwindow.Show();
+                };
 
 
                 UpdatePaginator(searchResult.TotalPostsCount, searchResult.Offset, pageResultLimit);
