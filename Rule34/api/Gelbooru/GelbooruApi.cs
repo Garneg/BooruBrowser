@@ -16,83 +16,83 @@ using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BooruBrowser
+namespace BooruBrowser.Api
 {
     [XmlRoot(ElementName = "posts")]
     public class GelbooruSearchResult
     {
         [XmlElement(ElementName = "post")]
-        public List<GelbooruPost> Posts;
+        public List<GelbooruPost> Posts { get; set; }
 
         [XmlAttribute(AttributeName = "limit")]
-        public int Limit;
+        public int Limit { get; set; }
 
         [XmlAttribute(AttributeName = "offset")]
-        public int Offset;
+        public int Offset { get; set; }
 
         [XmlAttribute(AttributeName = "count")]
-        public int TotalPostsCount;
+        public int TotalPostsCount { get; set; }
     }
 
     [XmlRoot(ElementName = "post")]
     public class GelbooruPost
     {
         [XmlElement(ElementName = "id")]
-        public int Id;
+        public int Id { get; set; }
 
         [XmlElement(ElementName = "created_at")]
-        public string CreatedAt;
+        public string CreatedAt { get; set; }
 
         [XmlElement(ElementName = "score")]
-        public int Score;
+        public int Score { get; set; }
 
         [XmlElement(ElementName = "source")]
-        public string Source;
-        
+        public string Source { get; set; }
+
         [XmlElement(ElementName = "rating")]
-        public string Rating;
+        public string Rating { get; set; }
 
         [XmlElement(ElementName = "owner")]
-        public string Owner;
+        public string Owner { get; set; }
 
         [XmlElement(ElementName = "creator_id")]
-        public long CreatorId;
+        public long CreatorId { get; set; }
 
         [XmlElement(ElementName = "tags")]
-        public string Tags;
+        public string Tags { get; set; }
 
         // File
         [XmlElement(ElementName = "file_url")]
-        public string FileUrl;
+        public string FileUrl { get; set; }
 
         [XmlElement(ElementName = "width")]
-        public int Width;
+        public int Width { get; set; }
 
         [XmlElement(ElementName = "height")]
-        public int Height;
+        public int Height { get; set; }
 
         // Preview
         [XmlElement(ElementName = "preview_url")]
-        public string PreviewUrl;
-        
+        public string PreviewUrl { get; set; }
+
         [XmlElement(ElementName = "preview_width")]
-        public int PreviewWidth;
+        public int PreviewWidth { get; set; }
 
         [XmlElement(ElementName = "preview_height")]
-        public int PreviewHeight;
+        public int PreviewHeight { get; set; }
 
         // Sample
         [XmlElement(ElementName = "sample_url")]
-        public string SampleUrl;
+        public string SampleUrl { get; set; }
 
         [XmlElement(ElementName = "sample")]
-        public int SampleCount;
+        public int SampleCount { get; set; }
 
         [XmlElement(ElementName = "sample_width")]
-        public int SampleWidth;
+        public int SampleWidth { get; set; }
 
         [XmlElement(ElementName = "sample_height")]
-        public int SampleHeight;
+        public int SampleHeight { get; set; }
 
 
 
@@ -117,13 +117,14 @@ namespace BooruBrowser
         public string Category { get; set; }
     }
 
-    class GelbooruApi
+    public class GelbooruApi
     {
         public async static Task<BooruSearchResult> SearchPosts(string[] tags, int pageNumber, int limit = 10)
         {
             WebClient client = new WebClient();
             ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, chainName) => { return true; };
-            string response = await client.DownloadStringTaskAsync($"https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit={limit}&pid={pageNumber}&tags={string.Join('+', tags)}");
+            // Rating sensible for debug, remove later
+            string response = await client.DownloadStringTaskAsync($"https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit={limit}&pid={pageNumber}&tags=rating:sensitive+{string.Join('+', tags)}");
             var doc = new XmlDocument();
             
             doc.LoadXml(response);
@@ -192,4 +193,6 @@ namespace BooruBrowser
         
 
     }
+
+    
 }

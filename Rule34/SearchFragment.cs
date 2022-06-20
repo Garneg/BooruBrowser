@@ -24,6 +24,8 @@ using System.Text.Json.Serialization;
 using Android.InputMethodServices;
 using Android.Views.InputMethods;
 
+using BooruBrowser.Api;
+
 
 namespace BooruBrowser
 {
@@ -43,13 +45,10 @@ namespace BooruBrowser
         private Spinner sortBySpinner;
         private Spinner sortOrderSpinner;
 
-        private int lastRequestHashCode = 0;
         private string searchSortBy = "updated";
         private string sortOrder = "desc";
 
         private ListPopupWindow autocompleteListWindow;
-
-        bool isWorking = true;
 
         private Android.Support.V7.Widget.RecyclerView recyclerView;
 
@@ -88,7 +87,7 @@ namespace BooruBrowser
 
             Paginator.Visibility = ViewStates.Gone;
 
-
+            
 
             string[] spinnerAdapterArray = new string[] { "Default", "Updated", "Score", "Id" };
 
@@ -293,8 +292,6 @@ namespace BooruBrowser
                 
                 string query = lastQuery.Replace(' ', '+');
 
-                int currentRequestHashCode = 0;
-
                 var searchResult = await GelbooruApi.SearchPosts(query.Split('+'), pageIndex, pageResultLimit);//PostsCollection.FromXml(response);
                 var Collection = searchResult.Posts;
                 List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
@@ -312,6 +309,7 @@ namespace BooruBrowser
 
                 searchRecyclerViewAdapter.HolderClick += (object sender, Android.Support.V7.Widget.RecyclerView.ViewHolder holder) =>
                 {
+                    Toast.MakeText(Activity, "Item clicked", ToastLength.Short).Show();
                     //isWorking = false;
                     //Task.Delay(300).Wait();
                     //new Handler(Activity.MainLooper).Post(() =>
@@ -428,24 +426,6 @@ namespace BooruBrowser
                 builder.SetNeutralButton("Copy error message", (sender, eventargs) => { Xamarin.Essentials.Clipboard.SetTextAsync(innerex); });
                 builder.Create().Show();
             }
-        }
-
-
-
-        public async Task<XmlDocument> RequestXml(string RequestUrl)
-        {
-            lastRequestHashCode = RequestUrl.GetHashCode();
-            HttpWebRequest request = WebRequest.CreateHttp(RequestUrl);
-
-            HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
-
-            StreamReader responseReader = new StreamReader(response.GetResponseStream());
-
-            XmlDocument doc = new XmlDocument();
-
-            doc.LoadXml(await responseReader.ReadToEndAsync());
-
-            return doc;
         }
 
         public void UpdatePaginator(int totalPosts, int offset, int limit)

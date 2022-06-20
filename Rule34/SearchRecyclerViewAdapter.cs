@@ -20,18 +20,23 @@ namespace BooruBrowser
         public override int ItemCount => posts.Length;
 
         private BooruPost[] posts;
-        private Bitmap[] cachedBitmaps;
+        private Bitmap[] cachedPreviews;
 
 
         public SearchRecyclerViewAdapter(BooruPost[] booruPosts)
         {
             posts = booruPosts;
-            cachedBitmaps = new Bitmap[posts.Length];
+            cachedPreviews = new Bitmap[posts.Length];
         }
 
         public async override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
         {
-            (holder as SearchRecyclerViewAdapterViewHolder).Post = posts[position];
+
+            var realHolder = (holder as SearchRecyclerViewAdapterViewHolder);
+            realHolder.Post = posts[position];
+
+            int holderRecycled = realHolder.RecycleCount;
+
             View holderView = holder.ItemView;
             var thumb = holderView.FindViewById<ImageView>(Resource.Id.thumbnail_image);
             var text = holderView.FindViewById<TextView>(Resource.Id.post_recyclerview_item_additonal_text);
@@ -41,28 +46,44 @@ namespace BooruBrowser
             thumb.Visibility = ViewStates.Invisible;
 
             text.Text = String.Join(' ', posts[position].Tags);
-
-            if (cachedBitmaps[position] != null)
+            text.SetMaxLines(2);
+            text.Click += (s, e) =>
             {
-                //thumb.SetImageBitmap(cachedBitmaps[position]);
-                //thumb.Visibility = ViewStates.Visible;
-                //return;
+                if (text.MaxLines == 2)
+                    text.SetMaxLines(1000);
+                else
+                    text.SetMaxLines(2);
+            };
+
+            if (cachedPreviews[position] != null)
+            {
+                thumb.SetImageBitmap(cachedPreviews[position]);
+                thumb.Visibility = ViewStates.Visible;
             }
+            
 
             ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, errors) => true;
 
             WebClient webClient = new WebClient();
             string url = posts[position].SampleUrl.Contains(".mp4") ? posts[position].PreviewUrl : posts[position].SampleUrl;
-            byte[] imageBytes = await webClient.DownloadDataTaskAsync(url);
 
+
+            if (cachedPreviews[position] == null)
+            {
+                byte[] previewBytes = await webClient.DownloadDataTaskAsync(posts[position].PreviewUrl);
+                cachedPreviews[position] = await BitmapFactory.DecodeByteArrayAsync(previewBytes, 0, previewBytes.Length);
+                if (holderRecycled == realHolder.RecycleCount)
+                thumb.SetImageBitmap(cachedPreviews[position]);
+            }
+
+            byte[] imageBytes = await webClient.DownloadDataTaskAsync(url);
             Bitmap thumbBitmap = await BitmapFactory.DecodeByteArrayAsync(imageBytes, 0, imageBytes.Length);
 
-            cachedBitmaps[position] = thumbBitmap;
-
-            thumb.SetImageBitmap(thumbBitmap);
-            thumb.Visibility = ViewStates.Visible;
-
-            
+            if (holderRecycled == realHolder.RecycleCount)
+            {
+                thumb.SetImageBitmap(thumbBitmap);
+                thumb.Visibility = ViewStates.Visible;
+            }
 
             holderView.Click += (s, e) => HolderClick.Invoke(this, holder);
 
@@ -86,8 +107,8 @@ namespace BooruBrowser
         public override void OnViewRecycled(Java.Lang.Object holder)
         {
             var realHolder = holder as SearchRecyclerViewAdapterViewHolder;
-            realHolder.ItemView.Visibility = ViewStates.Visible;
-            
+            realHolder.ItemView.FindViewById(Resource.Id.thumbnail_image).Visibility = ViewStates.Invisible;
+            realHolder.RecycleCount++;
         }
 
         public delegate void HolderClickedEventHandler(object sender, RecyclerView.ViewHolder holder);
@@ -104,6 +125,7 @@ namespace BooruBrowser
     {
         public int ParentWidth;
         public BooruPost Post;
+        public int RecycleCount = 0;
 
         public SearchRecyclerViewAdapterViewHolder(View view) : base(view)
         {
