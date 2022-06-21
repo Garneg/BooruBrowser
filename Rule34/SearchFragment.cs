@@ -116,8 +116,7 @@ namespace BooruBrowser
             text.RequestFocus();
 
             recyclerView = Activity.FindViewById<Android.Support.V7.Widget.RecyclerView>(Resource.Id.search_fragment_recyclerview);
-            recyclerView.SetLayoutManager(new Android.Support.V7.Widget.LinearLayoutManager(Activity));
-            recyclerView.NestedScrollingEnabled = false;
+            recyclerView.SetLayoutManager(new Android.Support.V7.Widget.StaggeredGridLayoutManager(2, 1));
             
         }
 
@@ -293,18 +292,18 @@ namespace BooruBrowser
                 string query = lastQuery.Replace(' ', '+');
 
                 var searchResult = await GelbooruApi.SearchPosts(query.Split('+'), pageIndex, pageResultLimit);//PostsCollection.FromXml(response);
-                var Collection = searchResult.Posts;
+                var Collection = searchResult.Posts.Where(post => post != null).ToList();
                 List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
 
                 if (Collection.Count < 1)
                 {
-                    Toast.MakeText(Activity, "Not found any image🤷‍♂️", ToastLength.Short).Show();
+                    Toast.MakeText(Activity, "Nobody here but us chickens!", ToastLength.Short).Show();
                     return;
                 }
 
                 SearchRecyclerViewAdapter searchRecyclerViewAdapter = new SearchRecyclerViewAdapter(Collection.ToArray());
                
-                recyclerView.SetAdapter(searchRecyclerViewAdapter);
+                recyclerView.SwapAdapter(searchRecyclerViewAdapter, false);
                 
 
                 searchRecyclerViewAdapter.HolderClick += (object sender, Android.Support.V7.Widget.RecyclerView.ViewHolder holder) =>

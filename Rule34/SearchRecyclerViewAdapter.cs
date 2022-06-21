@@ -40,21 +40,14 @@ namespace BooruBrowser
             View holderView = holder.ItemView;
             var thumb = holderView.FindViewById<ImageView>(Resource.Id.thumbnail_image);
             var text = holderView.FindViewById<TextView>(Resource.Id.post_recyclerview_item_additonal_text);
+            
+            int height = (int)((float)posts[position].SampleHeight / posts[position].SampleWidth * (float)realHolder.ParentWidth / 2);
 
-            int height = (int)((float)posts[position].SampleHeight / (float)posts[position].SampleWidth * (float)(holder as SearchRecyclerViewAdapterViewHolder).ParentWidth);
-            thumb.SetMinimumHeight(height);
             thumb.Visibility = ViewStates.Invisible;
-
-            text.Text = String.Join(' ', posts[position].Tags);
+            thumb.SetMinimumHeight(height);
+            text.Text = string.Join(' ', posts[position].Tags);
             text.SetMaxLines(2);
-            text.Click += (s, e) =>
-            {
-                if (text.MaxLines == 2)
-                    text.SetMaxLines(1000);
-                else
-                    text.SetMaxLines(2);
-            };
-
+            
             if (cachedPreviews[position] != null)
             {
                 thumb.SetImageBitmap(cachedPreviews[position]);
@@ -65,41 +58,67 @@ namespace BooruBrowser
             ServicePointManager.ServerCertificateValidationCallback = (sender, cert, chain, errors) => true;
 
             WebClient webClient = new WebClient();
-            string url = posts[position].SampleUrl.Contains(".mp4") ? posts[position].PreviewUrl : posts[position].SampleUrl;
-
+            string url = posts[position].ContentType == ContentType.Static ? posts[position].SampleUrl : posts[position].PreviewUrl;
 
             if (cachedPreviews[position] == null)
             {
-                byte[] previewBytes = await webClient.DownloadDataTaskAsync(posts[position].PreviewUrl);
-                cachedPreviews[position] = await BitmapFactory.DecodeByteArrayAsync(previewBytes, 0, previewBytes.Length);
-                if (holderRecycled == realHolder.RecycleCount)
-                thumb.SetImageBitmap(cachedPreviews[position]);
+                try
+                {
+                    byte[] previewBytes = await webClient.DownloadDataTaskAsync(posts[position].PreviewUrl);
+                    Bitmap previewBitmap = await BitmapFactory.DecodeByteArrayAsync(previewBytes, 0, previewBytes.Length);
+                    cachedPreviews[position] = Bitmap.CreateScaledBitmap(previewBitmap, holderView.Width, height, true);
+                    if (holderRecycled == realHolder.RecycleCount)
+                    {
+                        thumb.SetImageBitmap(cachedPreviews[position]);
+                        thumb.Visibility = ViewStates.Visible;
+                    }
+                }
+                catch(Exception e)
+                {
+
+                }
             }
-
-            byte[] imageBytes = await webClient.DownloadDataTaskAsync(url);
-            Bitmap thumbBitmap = await BitmapFactory.DecodeByteArrayAsync(imageBytes, 0, imageBytes.Length);
-
-            if (holderRecycled == realHolder.RecycleCount)
+            try
             {
-                thumb.SetImageBitmap(thumbBitmap);
-                thumb.Visibility = ViewStates.Visible;
+                byte[] imageBytes = await webClient.DownloadDataTaskAsync(url);
+                Bitmap thumbBitmap = await BitmapFactory.DecodeByteArrayAsync(imageBytes, 0, imageBytes.Length);
+                thumbBitmap = Bitmap.CreateScaledBitmap(thumbBitmap, realHolder.ItemView.Height, height, true);
+                if (holderRecycled == realHolder.RecycleCount)
+                {
+                    thumb.SetImageBitmap(thumbBitmap);
+                    thumb.Visibility = ViewStates.Visible;
+                    //thumb.SetMaxHeight(height);
+                    //thumb.SetMinimumHeight(height);
+                }
             }
+            catch(Exception e)
+            {
 
-            holderView.Click += (s, e) => HolderClick.Invoke(this, holder);
-
-            holderView.LongClick += (s, e) => HolderLongClick.Invoke(this, holder);
+            }
+           
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             View view = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.post_recyclerview_item, parent, false);
 
-
+            var textview = view.FindViewById<TextView>(Resource.Id.post_recyclerview_item_additonal_text);
+            textview.Click += (s, e) =>
+            {
+                if (textview.MaxLines == 2)
+                    textview.SetMaxLines(1000);
+                else
+                    textview.SetMaxLines(2);
+            };
 
             var holder = new SearchRecyclerViewAdapterViewHolder(view)
             {
                 ParentWidth = parent.Width
             };
+
+            view.Click += (s, e) => HolderClick.Invoke(this, holder);
+
+            view.LongClick += (s, e) => HolderLongClick.Invoke(this, holder);
 
             return holder;
         }

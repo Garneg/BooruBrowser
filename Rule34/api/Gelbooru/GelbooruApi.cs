@@ -136,7 +136,7 @@ namespace BooruBrowser.Api
 
             foreach(var post in resultPosts)
             {
-                boorus.Add(new BooruPost()
+                BooruPost booruPost = new BooruPost()
                 {
                     PostId = post.Id,
                     PreviewUrl = post.PreviewUrl,
@@ -144,7 +144,6 @@ namespace BooruBrowser.Api
                     FileUrl = post.FileUrl,
                     Tags = post.Tags.Split(' '),
                     Score = post.Score,
-                    Rating = post.Rating,
                     Source = post.Source,
                     Width = post.Width,
                     Height = post.Height,
@@ -152,8 +151,34 @@ namespace BooruBrowser.Api
                     PreviewHeight = post.PreviewHeight,
                     SampleWidth = post.SampleCount == 1 ? post.SampleWidth : post.Width,
                     SampleHeight = post.SampleCount == 1 ? post.SampleHeight : post.Height
-                });
+                };
+                
+                switch (post.Rating)
+                {
+                    case "sensitive":
+                        booruPost.Rating = PostRating.Safe;
+                        break;
+                    case "explicit":
+                        booruPost.Rating = PostRating.Explicit;
+                        break;
+                    case "questionable":
+                        booruPost.Rating = PostRating.Questionable;
+                        break;
+                }
+
+                if (post.FileUrl.EndsWith(".mp4"))
+                {
+                    booruPost.ContentType = ContentType.NonStatic;
+                }
+                else
+                {
+                    booruPost.ContentType = ContentType.Static;
+                }
+
+                boorus.Add(booruPost);
             }
+
+            
 
             BooruSearchResult booruSearchResult = new BooruSearchResult()
             {
