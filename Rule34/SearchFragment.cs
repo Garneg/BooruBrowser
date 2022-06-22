@@ -87,7 +87,7 @@ namespace BooruBrowser
 
             Paginator.Visibility = ViewStates.Gone;
 
-            
+
 
             string[] spinnerAdapterArray = new string[] { "Default", "Updated", "Score", "Id" };
 
@@ -117,7 +117,7 @@ namespace BooruBrowser
 
             recyclerView = Activity.FindViewById<Android.Support.V7.Widget.RecyclerView>(Resource.Id.search_fragment_recyclerview);
             recyclerView.SetLayoutManager(new Android.Support.V7.Widget.StaggeredGridLayoutManager(2, 1));
-            
+
         }
 
 
@@ -192,7 +192,7 @@ namespace BooruBrowser
         }
 
 
-        
+
         private async void SearchNew()
         {
             if ($"{GetSortQuery()}+{text.Text}" == lastQuery)
@@ -288,39 +288,32 @@ namespace BooruBrowser
                 imm.HideSoftInputFromWindow(text.ApplicationWindowToken, HideSoftInputFlags.None);
 
                 Paginator.Visibility = ViewStates.Gone;
-                
+
                 string query = lastQuery.Replace(' ', '+');
 
                 var searchResult = await GelbooruApi.SearchPosts(query.Split('+'), pageIndex, pageResultLimit);//PostsCollection.FromXml(response);
                 var Collection = searchResult.Posts.Where(post => post != null).ToList();
-                List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
 
-                if (Collection.Count < 1)
-                {
-                    Toast.MakeText(Activity, "Nobody here but us chickens!", ToastLength.Short).Show();
-                    return;
-                }
+                //if (Collection.Count < 1)
+                //{
+                //    Toast.MakeText(Activity, "Nobody here but us chickens!", ToastLength.Short).Show();
+                //    return;
+                //}
 
                 SearchRecyclerViewAdapter searchRecyclerViewAdapter = new SearchRecyclerViewAdapter(Collection.ToArray());
-               
+
                 recyclerView.SwapAdapter(searchRecyclerViewAdapter, false);
-                
+
 
                 searchRecyclerViewAdapter.HolderClick += (object sender, Android.Support.V7.Widget.RecyclerView.ViewHolder holder) =>
                 {
-                    Toast.MakeText(Activity, "Item clicked", ToastLength.Short).Show();
-                    //isWorking = false;
-                    //Task.Delay(300).Wait();
-                    //new Handler(Activity.MainLooper).Post(() =>
-                    //{
-                    //    var transaction = ParentFragmentManager.BeginTransaction();
-                    //    PostFragment fragment = new PostFragment(Preview);
-                    //    transaction.Replace(Resource.Id.main_frame_layout, fragment);
-                    //    transaction.SetReorderingAllowed(true);
-                    //    transaction.AddToBackStack("post_fragment");
-                    //    transaction.Commit();
 
-                    //});
+                    var transaction = ParentFragmentManager.BeginTransaction();
+                    PostFragment fragment = new PostFragment();
+                    transaction.Replace(Resource.Id.main_frame_layout, fragment);
+                    transaction.SetReorderingAllowed(true);
+                    transaction.AddToBackStack("post_fragment");
+                    transaction.Commit();
 
                 };
                 searchRecyclerViewAdapter.HolderLongClick += (sender, e) =>
@@ -361,7 +354,7 @@ namespace BooruBrowser
                     {
                         var popup = s as ListPopupWindow;
                         popup.Dismiss();
-                        
+
 
                         switch (e.Position)
                         {

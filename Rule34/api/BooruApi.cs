@@ -25,7 +25,7 @@ namespace BooruBrowser
     }
     
     /// <summary>
-    /// Base class for all booru's api post classes
+    /// Base class for all boorus api post classes
     /// </summary>
     public class BooruPost
     {
@@ -137,6 +137,9 @@ namespace BooruBrowser
 
         public long Change { get; set; }
 
+        /// <summary>
+        /// Type of content
+        /// </summary>
         public ContentType ContentType { get; set; }
 
     }
@@ -157,7 +160,6 @@ namespace BooruBrowser
     }
 
     /// <summary>
-    /// Rating of post.
     /// </summary>
     public enum PostRating : byte
     {

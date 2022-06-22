@@ -39,6 +39,7 @@ namespace BooruBrowser.Api
     {
         [XmlElement(ElementName = "id")]
         public int Id { get; set; }
+        
 
         [XmlElement(ElementName = "created_at")]
         public string CreatedAt { get; set; }

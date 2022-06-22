@@ -1,61 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<linearlayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:minWidth="25px"
-    android:minHeight="25px"
+    android:minwidth="25px"
+    android:minheight="25px"
     android:gravity="center"
-    android:foregroundGravity="center"
+    android:foregroundgravity="center"
     android:orientation="vertical"
-    android:id="@+id/linearLayout1">
+    android:id="@+id/linearlayout1">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <com.google.android.material.appbar.appbarlayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/apptheme.appbaroverlay">
 
-        <androidx.appcompat.widget.Toolbar
+        <androidx.appcompat.widget.toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:title="@string/app_name"
+            app:title="Gelbooru"
             android:layout_gravity="right">
 
 
-        </androidx.appcompat.widget.Toolbar>
+        </androidx.appcompat.widget.toolbar>
 
-    </com.google.android.material.appbar.AppBarLayout>
+    </com.google.android.material.appbar.appbarlayout>
 
-    <RelativeLayout
+    <relativelayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/relativeLayout1">
+        android:id="@+id/relativelayout1">
 
-        <LinearLayout
+        <linearlayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center">
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:id="@+id/top_booru_logo"
-                android:src="@drawable/gelbooru"
-                android:scaleType="fitCenter"/>
+
             <LinearLayout
                 android:orientation="horizontal"
-                android:minWidth="100dp"
-                android:minHeight="25dp"
+                android:minwidth="100dp"
+                android:minheight="25dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:id="@+id/SearchBox">
-                <AutoCompleteTextView
+                android:id="@+id/searchbox">
+                <autocompletetextview
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:minWidth="200dp"
@@ -66,104 +61,106 @@
                     android:hint="Type some tags..."
                     android:id="@+id/autoCompleteTextView1" />
                 <Button
-                    android:text="Go"
+                    android:text="search"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/linearLayout1"
-                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_torightof="@id/linearlayout1"
+                    style="@style/widget.appcompat.button.borderless"
                     android:id="@+id/button1" />
-            </LinearLayout>
+            </linearlayout>
 
-            <LinearLayout
+            <linearlayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp">
-                <TextView
+                <textview
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sort by:"/>
-                <Spinner
+                    android:text="sort by:"/>
+                <spinner
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/sortby_spinner"/>
-            </LinearLayout>
-            <LinearLayout
+            </linearlayout>
+            <linearlayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:id="@+id/order_spinner_container">
-                <TextView
+                <textview
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Order:"/>
-                <Spinner
+                    android:text="order:"/>
+                <spinner
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/order_spinner"/>
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/search_fragment_recyclerview"/>
-
-
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminate="true"
-                android:id="@+id/progressBar1"
-                android:visibility="gone"/>
+                android:layout_height="match_parent">
+                <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true"
+                    android:id="@+id/progressBar1"
+                    android:visibility="gone"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/search_fragment_recyclerview"/>
+            </RelativeLayout>
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-                <LinearLayout
+                <linearlayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/Divider">
-                    <LinearLayout
+                    android:id="@+id/divider">
+                    <linearlayout
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="#a0a0a099"/>
-                </LinearLayout>
-                <LinearLayout
+                </linearlayout>
+                <linearlayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="50dp"
+                    android:minheight="50dp"
                     android:gravity="center"
-                    android:paddingTop="16dp"
+                    android:paddingtop="16dp"
                     android:id="@+id/paginator">
-                    <Button
+                    <button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="8dp"
+                        android:layout_marginright="8dp"
                         android:text="&lt;&lt;"
-                        style="@style/Base.Widget.AppCompat.Button.Borderless"
-                        android:id="@+id/previousPageButton"/>
-                    <TextView
+                        style="@style/base.widget.appcompat.button.borderless"
+                        android:id="@+id/previouspagebutton"/>
+                    <textview
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Hello world"
+                        android:text="hello world"
                         android:padding="8dp"
-                        android:background="@color/colorPrimaryDark"
-                        android:textColor="#fefefe"
-                        android:textStyle="bold"
-                        android:id="@+id/pageNumberIndicator"/>
-                    <Button
+                        android:background="@color/colorprimarydark"
+                        android:textcolor="#fefefe"
+                        android:textstyle="bold"
+                        android:id="@+id/pagenumberindicator"/>
+                    <button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
+                        android:layout_marginleft="8dp"
                         android:text="&gt;&gt;"
-                        style="@style/Base.Widget.AppCompat.Button.Borderless"
-                        android:id="@+id/nextPageButton"/>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-    </RelativeLayout>
+                        style="@style/base.widget.appcompat.button.borderless"
+                        android:id="@+id/nextpagebutton"/>
+                </linearlayout>
+            </linearlayout>
+        </linearlayout>
+    </relativelayout>
 
-</LinearLayout>
+</linearlayout>

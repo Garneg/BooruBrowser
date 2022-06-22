@@ -74,15 +74,14 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="api\BooruApi.cs" />
     <Compile Include="api\Xbooru\XbooruApi.cs" />
     <Compile Include="AppData.cs" />
     <Compile Include="Autocomplete.cs" />
     <Compile Include="FragmentsController.cs" />
     <Compile Include="api\Gelbooru\GelbooruApi.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="Post.cs" />
     <Compile Include="PostFragment.cs" />
-    <Compile Include="PostThumbnail.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchFragment.cs" />
@@ -130,9 +129,6 @@
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.2.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\drawable\topb.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\mipmap-xxxhdpi\ic_launcher_foreground.png" />
   </ItemGroup>
   <ItemGroup>
@@ -168,12 +164,11 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\drawable\gelbooru.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\layout\post_recyclerview_item.xml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\drawable\" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
     Other similar extension points exist, see Microsoft.Common.targets.
