@@ -293,13 +293,12 @@ namespace BooruBrowser
 
                 var searchResult = await GelbooruApi.SearchPosts(query.Split('+'), pageIndex, pageResultLimit);//PostsCollection.FromXml(response);
                 var Collection = searchResult.Posts.Where(post => post != null).ToList();
-                List<PostThumbnail> postThumbnails = new List<PostThumbnail>();
 
-                if (Collection.Count < 1)
-                {
-                    Toast.MakeText(Activity, "Nobody here but us chickens!", ToastLength.Short).Show();
-                    return;
-                }
+                //if (Collection.Count < 1)
+                //{
+                //    Toast.MakeText(Activity, "Nobody here but us chickens!", ToastLength.Short).Show();
+                //    return;
+                //}
 
                 SearchRecyclerViewAdapter searchRecyclerViewAdapter = new SearchRecyclerViewAdapter(Collection.ToArray());
                
