@@ -74,15 +74,14 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="api\BooruApi.cs" />
     <Compile Include="api\Xbooru\XbooruApi.cs" />
     <Compile Include="AppData.cs" />
     <Compile Include="Autocomplete.cs" />
     <Compile Include="FragmentsController.cs" />
     <Compile Include="api\Gelbooru\GelbooruApi.cs" />
     <Compile Include="MainActivity.cs" />
-    <Compile Include="Post.cs" />
     <Compile Include="PostFragment.cs" />
-    <Compile Include="PostThumbnail.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchFragment.cs" />

@@ -14,7 +14,6 @@ namespace BooruBrowser
     class PostFragment : AndroidX.Fragment.App.Fragment
     {
         private BooruPost post;
-        private PostThumbnail thumbnail;
         private Android.Graphics.Bitmap bitmap;
         public PostFragment() : base()
         {
